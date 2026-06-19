@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from sql_map import build_query_map
-from sql_map.errors import SqlMapContractError
+from querymap import build_query_map
+from querymap.errors import QueryMapContractError
 
 
 def test_create_as_select_is_supported():
@@ -43,5 +43,5 @@ def test_insert_select_is_supported():
 
 
 def test_unsupported_statement_fails_loudly():
-    with pytest.raises(SqlMapContractError):
+    with pytest.raises(QueryMapContractError):
         build_query_map("UPDATE analytics.orders SET status = 'closed'", dialect="postgres")

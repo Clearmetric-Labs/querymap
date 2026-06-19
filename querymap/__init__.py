@@ -1,13 +1,13 @@
-"""Public package surface for sql-map."""
+"""Public package surface for querymap."""
 
 from __future__ import annotations
 
 from ._version import __version__
 from .api import build_query_map, render_json, render_text
 from .errors import (
-    SqlMapContractError,
-    SqlMapError,
-    SqlMapParseError,
+    QueryMapContractError,
+    QueryMapError,
+    QueryMapParseError,
 )
 from .models import (
     OutputColumn,
@@ -33,7 +33,7 @@ __all__ = [
     "RelationEdge",
     "RelationUsage",
     "WarningEntry",
-    "SqlMapContractError",
-    "SqlMapError",
-    "SqlMapParseError",
+    "QueryMapContractError",
+    "QueryMapError",
+    "QueryMapParseError",
 ]

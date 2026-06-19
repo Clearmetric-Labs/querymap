@@ -1,4 +1,4 @@
-"""JSON renderer for sql-map."""
+"""JSON renderer for querymap."""
 
 from __future__ import annotations
 

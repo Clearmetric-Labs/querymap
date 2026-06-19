@@ -1,4 +1,4 @@
-from sql_map import build_query_map
+from querymap import build_query_map
 
 
 def test_extracts_simple_table_relation():

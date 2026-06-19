@@ -1,11 +1,11 @@
-"""Artifact assembly for sql-map."""
+"""Artifact assembly for querymap."""
 
 from __future__ import annotations
 
 from sqlglot import exp
 
 from .ctes import extract_dependency_edges
-from .errors import SqlMapContractError
+from .errors import QueryMapContractError
 from .models import QueryMap, QuerySummary, WarningEntry
 from .parser import ParsedStatement
 from .relations import extract_relations
@@ -26,7 +26,7 @@ def build_query_map_from_parsed(parsed: ParsedStatement) -> QueryMap:
     ]
 
     if not relation_extraction.relations:
-        raise SqlMapContractError("No tables or CTE relations were found in the SQL statement.")
+        raise QueryMapContractError("No tables or CTE relations were found in the SQL statement.")
 
     summary = QuerySummary(
         dialect=parsed.dialect,

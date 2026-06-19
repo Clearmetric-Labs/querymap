@@ -1,6 +1,6 @@
 # QueryMap Schema
 
-`QueryMap` is the canonical public artifact produced by `sql-map`.
+`QueryMap` is the canonical public artifact produced by `querymap`.
 
 ## Stable Shape
 

@@ -1,6 +1,6 @@
 # Release Checklist
 
-Before publishing `sql-map`, verify the public package surface end to end.
+Before publishing `querymap`, verify the public package surface end to end.
 
 ## Repository
 
@@ -38,5 +38,5 @@ Before publishing `sql-map`, verify the public package surface end to end.
 - confirm package metadata is complete enough for PyPI consumers
 - confirm PyPI Trusted Publishing is configured for `.github/workflows/publish.yml`
   with the `pypi` environment
-- confirm the package description distinguishes `sql-map` from the unrelated
+- confirm the package description distinguishes `querymap` from the unrelated
   `sqlmap` security tool

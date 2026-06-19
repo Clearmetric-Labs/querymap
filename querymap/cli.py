@@ -1,4 +1,4 @@
-"""CLI entrypoint for sql-map."""
+"""CLI entrypoint for querymap."""
 
 from __future__ import annotations
 
@@ -9,12 +9,12 @@ from pathlib import Path
 
 from . import __version__
 from .api import build_query_map, render_json, render_text
-from .errors import SqlMapError
+from .errors import QueryMapError
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="sql-map",
+        prog="querymap",
         description="Map one supported SQL statement into deterministic relation dependencies.",
     )
     parser.add_argument(
@@ -52,8 +52,8 @@ def main(argv: list[str] | None = None) -> int:
         else:
             print(render_text(query_map))
         return 0
-    except (OSError, SqlMapError) as exc:
-        print(f"sql-map error: {exc}", file=sys.stderr)
+    except (OSError, QueryMapError) as exc:
+        print(f"querymap error: {exc}", file=sys.stderr)
         return 1
 
 

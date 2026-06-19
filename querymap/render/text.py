@@ -1,4 +1,4 @@
-"""Text renderer for sql-map."""
+"""Text renderer for querymap."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def render_text(query_map: QueryMap) -> str:
     lines: list[str] = []
     summary = query_map.summary
 
-    lines.append("sql-map")
+    lines.append("querymap")
     lines.append(f"dialect: {summary.dialect}")
     lines.append(f"statement_type: {summary.statement_type}")
     lines.append(f"has_ctes: {summary.has_ctes}")

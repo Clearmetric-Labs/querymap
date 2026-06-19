@@ -14,8 +14,8 @@ FORBIDDEN_PREFIXES = (
 )
 
 
-def test_sql_map_has_no_enterprise_imports():
-    package_root = Path(__file__).resolve().parents[1] / "sql_map"
+def test_querymap_has_no_enterprise_imports():
+    package_root = Path(__file__).resolve().parents[1] / "querymap"
     violations: list[str] = []
 
     for path in package_root.rglob("*.py"):

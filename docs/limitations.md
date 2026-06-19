@@ -1,10 +1,10 @@
 # Limitations
 
-`sql-map` is intentionally deterministic and narrow.
+`querymap` is intentionally deterministic and narrow.
 
 ## Supported Input
 
-`sql-map` accepts exactly one supported statement per invocation:
+`querymap` accepts exactly one supported statement per invocation:
 
 - `SELECT ...`
 - `INSERT ... SELECT ...`
@@ -37,7 +37,7 @@ The MVP does **not** yet guarantee:
 
 ## Loud Failure Behavior
 
-`sql-map` fails loudly when:
+`querymap` fails loudly when:
 
 - the SQL input is empty
 - the SQL cannot be parsed
@@ -47,7 +47,7 @@ The MVP does **not** yet guarantee:
 
 ## Warning-Based Behavior
 
-`sql-map` warns instead of failing when the relation structure is still clear
+`querymap` warns instead of failing when the relation structure is still clear
 enough to model honestly.
 
 Current warning cases include:

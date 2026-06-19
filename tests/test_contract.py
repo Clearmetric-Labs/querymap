@@ -1,4 +1,4 @@
-from sql_map import QueryMap, QuerySummary
+from querymap import QueryMap, QuerySummary
 
 
 def test_query_map_contract_is_forward_compatible():

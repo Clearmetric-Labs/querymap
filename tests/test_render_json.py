@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sql_map import build_query_map, render_json
+from querymap import build_query_map, render_json
 
 
 def test_render_json_keeps_forward_compatible_shape():

@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for contributing to `sql-map`.
+Thanks for contributing to `querymap`.
 
 ## Setup
 

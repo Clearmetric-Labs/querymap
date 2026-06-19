@@ -1,6 +1,6 @@
-# sql-map
+# querymap
 
-`sql-map` maps one supported SQL statement into deterministic relation
+`querymap` maps one supported SQL statement into deterministic relation
 dependencies so you can answer "what feeds what in this query?" fast.
 
 It is a narrow static-analysis tool:
@@ -11,12 +11,12 @@ It is a narrow static-analysis tool:
 - no dbt project
 - no AI key
 
-`sql-map` is not related to [`sqlmap`](https://sqlmap.org/), the SQL injection
+`querymap` is not related to [`sqlmap`](https://sqlmap.org/), the SQL injection
 tool.
 
 ## What It Does
 
-`sql-map` extracts the relation structure of a query and returns a stable
+`querymap` extracts the relation structure of a query and returns a stable
 `QueryMap` artifact with:
 
 - `summary`
@@ -39,7 +39,7 @@ output mapping is robust enough to ship honestly.
 
 ## What It Does Not Do
 
-`sql-map` does **not** try to be a full lineage engine. It does not yet model:
+`querymap` does **not** try to be a full lineage engine. It does not yet model:
 
 - output column lineage
 - output-source attribution
@@ -49,7 +49,7 @@ output mapping is robust enough to ship honestly.
 
 ## Supported Statements
 
-`sql-map` accepts exactly one supported statement per invocation:
+`querymap` accepts exactly one supported statement per invocation:
 
 - `SELECT ...`
 - `INSERT ... SELECT ...`
@@ -72,7 +72,7 @@ python -m pip install .
 Once the first PyPI release is published:
 
 ```bash
-python -m pip install sql-map
+python -m pip install querymap
 ```
 
 For development and release validation:
@@ -86,25 +86,25 @@ python -m pip install -e ".[dev,release]"
 Run the bundled example:
 
 ```bash
-sql-map --dialect postgres ./examples/ugly_real_world.sql
+querymap --dialect postgres ./examples/ugly_real_world.sql
 ```
 
 The module entrypoint works too:
 
 ```bash
-python -m sql_map --dialect postgres ./examples/ugly_real_world.sql
+python -m querymap --dialect postgres ./examples/ugly_real_world.sql
 ```
 
 JSON output:
 
 ```bash
-sql-map --dialect postgres --format json ./examples/ugly_real_world.sql
+querymap --dialect postgres --format json ./examples/ugly_real_world.sql
 ```
 
 Example text output:
 
 ```text
-sql-map
+querymap
 dialect: postgres
 statement_type: select
 has_ctes: True
@@ -189,7 +189,7 @@ Example JSON output:
 
 ## Loud Failure Behavior
 
-`sql-map` fails with a non-zero exit code when:
+`querymap` fails with a non-zero exit code when:
 
 - the SQL is empty
 - the SQL cannot be parsed for the chosen dialect
@@ -203,7 +203,7 @@ Some constructs are warning-based rather than fatal. See
 ## Python API
 
 ```python
-from sql_map import build_query_map, render_json
+from querymap import build_query_map, render_json
 
 sql = """
 WITH active_customers AS (
@@ -243,7 +243,7 @@ twine check dist/*
 
 ## Scope
 
-`sql-map` is the public OSS artifact only. It must not include:
+`querymap` is the public OSS artifact only. It must not include:
 
 - enterprise adapters
 - proprietary comparison or governance logic
@@ -252,7 +252,7 @@ twine check dist/*
 
 ## License
 
-`sql-map` is licensed under Apache 2.0. See [`LICENSE`](LICENSE).
+`querymap` is licensed under Apache 2.0. See [`LICENSE`](LICENSE).
 
 ## Contributing
 

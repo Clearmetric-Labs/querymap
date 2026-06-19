@@ -1,4 +1,4 @@
-"""Public API for sql-map."""
+"""Public API for querymap."""
 
 from __future__ import annotations
 

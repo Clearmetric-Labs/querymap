@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from sql_map import __version__
-from sql_map.cli import main
+from querymap import __version__
+from querymap.cli import main
 
 
 def test_cli_text_output(capsys):
@@ -18,7 +18,7 @@ def test_cli_text_output(capsys):
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "sql-map" in captured.out
+    assert "querymap" in captured.out
     assert "relations:" in captured.out
 
 
@@ -42,7 +42,7 @@ def test_module_entrypoint_runs_from_package_root():
         [
             sys.executable,
             "-m",
-            "sql_map",
+            "querymap",
             "--dialect",
             "postgres",
             str(sql_file),
@@ -63,4 +63,4 @@ def test_cli_version_output(capsys):
 
     captured = capsys.readouterr()
     assert exc_info.value.code == 0
-    assert captured.out.strip() == f"sql-map {__version__}"
+    assert captured.out.strip() == f"querymap {__version__}"

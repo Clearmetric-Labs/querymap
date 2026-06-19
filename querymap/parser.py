@@ -1,4 +1,4 @@
-"""sqlglot parsing helpers for sql-map."""
+"""sqlglot parsing helpers for querymap."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import sqlglot
 from sqlglot import exp
 
-from .errors import SqlMapContractError, SqlMapParseError
+from .errors import QueryMapContractError, QueryMapParseError
 
 
 @dataclass(frozen=True)
@@ -21,25 +21,25 @@ def parse_statement(sql: str, *, dialect: str) -> ParsedStatement:
     """Parse exactly one SQL statement into a supported AST."""
     cleaned = (sql or "").strip()
     if not cleaned:
-        raise SqlMapParseError("SQL input is empty.")
+        raise QueryMapParseError("SQL input is empty.")
 
     try:
         statements = [stmt for stmt in sqlglot.parse(cleaned, read=dialect) if stmt is not None]
     except Exception as exc:
-        raise SqlMapParseError(f"Failed to parse SQL with dialect {dialect!r}: {exc}") from exc
+        raise QueryMapParseError(f"Failed to parse SQL with dialect {dialect!r}: {exc}") from exc
 
     if not statements:
-        raise SqlMapParseError("SQL input produced no parseable statements.")
+        raise QueryMapParseError("SQL input produced no parseable statements.")
     if len(statements) != 1:
-        raise SqlMapContractError(
-            "sql-map MVP accepts exactly one SQL statement per invocation."
+        raise QueryMapContractError(
+            "querymap accepts exactly one SQL statement per invocation."
         )
 
     statement = statements[0]
     root_expression = _unwrap_root_expression(statement)
     if not isinstance(root_expression, exp.Query):
-        raise SqlMapContractError(
-            "sql-map supports exactly one SELECT, INSERT ... SELECT, or CREATE ... AS SELECT statement per invocation."
+        raise QueryMapContractError(
+            "querymap supports exactly one SELECT, INSERT ... SELECT, or CREATE ... AS SELECT statement per invocation."
         )
     return ParsedStatement(statement=statement, root_expression=root_expression, dialect=dialect)
 

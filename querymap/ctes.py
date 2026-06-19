@@ -1,4 +1,4 @@
-"""CTE and dependency edge extraction for sql-map."""
+"""CTE and dependency edge extraction for querymap."""
 
 from __future__ import annotations
 

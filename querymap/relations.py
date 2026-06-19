@@ -1,4 +1,4 @@
-"""Relation discovery and usage extraction for sql-map."""
+"""Relation discovery and usage extraction for querymap."""
 
 from __future__ import annotations
 

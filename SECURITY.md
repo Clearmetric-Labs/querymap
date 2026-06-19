@@ -1,6 +1,6 @@
 # Security Policy
 
-`sql-map` is a local static-analysis tool. It does not ship authentication,
+`querymap` is a local static-analysis tool. It does not ship authentication,
 RBAC, RLS, route handlers, or service-side runtime surfaces as part of this OSS
 package.
 

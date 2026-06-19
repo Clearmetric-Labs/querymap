@@ -41,5 +41,5 @@ jobs:
           . .pkgtest/bin/activate
           python -m pip install --upgrade pip
           python -m pip install dist/*.whl
-          sql-map --dialect postgres examples/ugly_real_world.sql
-          python -m sql_map --dialect postgres examples/simple.sql
+          querymap --dialect postgres examples/ugly_real_world.sql
+          python -m querymap --dialect postgres examples/simple.sql
