@@ -10,7 +10,7 @@ It owns:
 - deterministic JSON serialization
 - merge semantics
 
-It does **not** perform extraction by itself. Tool packages such as `querymap`
+It does **not** perform extraction by itself. Tool packages such as `query-map`
 depend on `catalog-core` and emit artifacts that follow its contract.
 
 ## Install

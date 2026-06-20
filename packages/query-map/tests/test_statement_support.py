@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from querymap import build_query_map
-from querymap.errors import QueryMapContractError
+from query_map import build_query_map
+from query_map.errors import QueryMapContractError
 
 
 def test_create_as_select_is_supported():

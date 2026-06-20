@@ -1,10 +1,10 @@
-# querymap Limitations
+# query-map Limitations
 
-`querymap` is intentionally deterministic and narrow.
+`query-map` is intentionally deterministic and narrow.
 
 ## Supported Input
 
-`querymap` accepts exactly one supported statement per invocation:
+`query-map` accepts exactly one supported statement per invocation:
 
 - `SELECT ...`
 - `INSERT ... SELECT ...`
@@ -12,7 +12,7 @@
 
 ## Guarantees
 
-`querymap` guarantees:
+`query-map` guarantees:
 
 - one supported SQL statement per invocation
 - dialect-aware parsing through `sqlglot`
@@ -23,7 +23,7 @@
 
 ## Current Boundaries
 
-`querymap` does **not** currently model:
+`query-map` does **not** currently model:
 
 - output column lineage
 - output-source attribution
@@ -33,5 +33,5 @@
 
 ## Warning-Based Behavior
 
-`querymap` warns instead of failing when the relation structure is still clear
+`query-map` warns instead of failing when the relation structure is still clear
 enough to model honestly.

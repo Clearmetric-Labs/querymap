@@ -1,4 +1,4 @@
-"""Module entrypoint for `python -m querymap`."""
+"""Module entrypoint for `python -m query_map`."""
 
 from __future__ import annotations
 

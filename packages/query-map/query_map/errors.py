@@ -1,10 +1,10 @@
-"""Package-specific errors for querymap."""
+"""Package-specific errors for query-map."""
 
 from __future__ import annotations
 
 
 class QueryMapError(Exception):
-    """Base class for querymap failures."""
+    """Base class for query-map failures."""
 
 
 class QueryMapParseError(QueryMapError):

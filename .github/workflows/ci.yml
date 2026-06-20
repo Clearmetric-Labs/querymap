@@ -13,8 +13,8 @@ jobs:
         package:
           - name: catalog-core
             path: packages/catalog-core
-          - name: querymap
-            path: packages/querymap
+          - name: query-map
+            path: packages/query-map
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
@@ -33,7 +33,7 @@ jobs:
 
       - name: Install package dependencies
         run: |
-          if [ "${{ matrix.package.name }}" = "querymap" ]; then
+          if [ "${{ matrix.package.name }}" = "query-map" ]; then
             python -m pip install -e packages/catalog-core
           fi
           python -m pip install -e "${{ matrix.package.path }}[dev,release]"
@@ -44,7 +44,7 @@ jobs:
       - name: Build distribution artifacts
         run: |
           python -m build ${{ matrix.package.path }}
-          if [ "${{ matrix.package.name }}" = "querymap" ]; then
+          if [ "${{ matrix.package.name }}" = "query-map" ]; then
             python -m build packages/catalog-core
           fi
 
@@ -62,8 +62,8 @@ jobs:
           else
             python -m pip install packages/catalog-core/dist/*.whl
             python -m pip install ${{ matrix.package.path }}/dist/*.whl
-            querymap --dialect postgres packages/querymap/examples/ugly_real_world.sql
-            python -m querymap --dialect postgres packages/querymap/examples/simple.sql
+            query-map --dialect postgres packages/query-map/examples/ugly_real_world.sql
+            python -m query_map --dialect postgres packages/query-map/examples/simple.sql
           fi
 
   repository-boundaries:
@@ -81,7 +81,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e packages/catalog-core
-          python -m pip install -e "packages/querymap[dev]"
+          python -m pip install -e "packages/query-map[dev]"
 
       - name: Run repository boundary checks
         run: pytest -v tests/test_repository_boundaries.py

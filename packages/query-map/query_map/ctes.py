@@ -1,4 +1,4 @@
-"""Dependency edge extraction for querymap."""
+"""Dependency edge extraction for query-map."""
 
 from __future__ import annotations
 

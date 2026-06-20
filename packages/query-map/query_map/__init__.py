@@ -1,4 +1,4 @@
-"""Public package surface for querymap."""
+"""Public package surface for query-map."""
 
 from __future__ import annotations
 

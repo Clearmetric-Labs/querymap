@@ -1,4 +1,4 @@
-"""sqlglot parsing helpers for querymap."""
+"""sqlglot parsing helpers for query-map."""
 
 from __future__ import annotations
 
@@ -31,13 +31,13 @@ def parse_statement(sql: str, *, dialect: str) -> ParsedStatement:
     if not statements:
         raise QueryMapParseError("SQL input produced no parseable statements.")
     if len(statements) != 1:
-        raise QueryMapContractError("querymap accepts exactly one SQL statement per invocation.")
+        raise QueryMapContractError("query-map accepts exactly one SQL statement per invocation.")
 
     statement = statements[0]
     root_expression = _unwrap_root_expression(statement)
     if not isinstance(root_expression, exp.Query):
         raise QueryMapContractError(
-            "querymap supports exactly one SELECT, INSERT ... SELECT, or CREATE ... AS SELECT statement per invocation."
+            "query-map supports exactly one SELECT, INSERT ... SELECT, or CREATE ... AS SELECT statement per invocation."
         )
     return ParsedStatement(statement=statement, root_expression=root_expression, dialect=dialect)
 

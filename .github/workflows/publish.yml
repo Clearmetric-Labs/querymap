@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "catalog-core-v*"
-      - "querymap-v*"
+      - "query-map-v*"
   workflow_dispatch:
     inputs:
       package:
@@ -13,7 +13,7 @@ on:
         type: choice
         options:
           - catalog-core
-          - querymap
+          - query-map
 
 permissions:
   contents: read
@@ -48,9 +48,9 @@ jobs:
               echo "name=catalog-core" >> "$GITHUB_OUTPUT"
               echo "path=packages/catalog-core" >> "$GITHUB_OUTPUT"
               ;;
-            querymap)
-              echo "name=querymap" >> "$GITHUB_OUTPUT"
-              echo "path=packages/querymap" >> "$GITHUB_OUTPUT"
+            query-map)
+              echo "name=query-map" >> "$GITHUB_OUTPUT"
+              echo "path=packages/query-map" >> "$GITHUB_OUTPUT"
               ;;
             *)
               echo "Unsupported package: $PACKAGE" >&2

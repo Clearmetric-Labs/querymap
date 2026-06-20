@@ -8,7 +8,7 @@ and downstream consumers.
 - `version` means artifact schema version only.
 - `version` is owned by `catalog-core`.
 - `version` is decoupled from package versions for `catalog-core`,
-  `querymap`, and every future CatalogKit package.
+  `query-map`, and every future CatalogKit package.
 - Bump `version` only for breaking changes to the serialized artifact contract.
 - Non-breaking additions must not bump `version`.
 

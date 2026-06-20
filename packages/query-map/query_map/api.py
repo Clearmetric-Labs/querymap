@@ -1,4 +1,4 @@
-"""Public API for querymap."""
+"""Public API for query-map."""
 
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ def build_query_map(
     *,
     dialect: str,
 ) -> QueryMap:
-    """Build the public querymap artifact for one SQL statement."""
+    """Build the public query-map artifact for one SQL statement."""
     parsed = parse_statement(sql, dialect=dialect)
     return build_query_map_from_parsed(parsed)
 

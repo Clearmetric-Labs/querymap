@@ -8,7 +8,7 @@ that core without duplicating shared logic or shared validation behavior.
 
 - `packages/catalog-core`: shared artifact models, canonical ID normalization,
   JSON serialization, merge semantics, and validation rules
-- `packages/querymap`: SQL structure mapping for one statement at a time, with
+- `packages/query-map`: SQL structure mapping for one statement at a time, with
   its existing public `QueryMap` contract preserved
 
 Tools depend on `catalog-core`. Tools do not depend on each other.
@@ -19,7 +19,7 @@ Tools depend on `catalog-core`. Tools do not depend on each other.
 CatalogKit/
   packages/
     catalog-core/
-    querymap/
+    query-map/
   docs/
   .github/workflows/
 ```
@@ -38,7 +38,7 @@ Install both current packages in editable mode:
 
 ```bash
 python -m pip install -e packages/catalog-core
-python -m pip install -e "packages/querymap[dev,release]"
+python -m pip install -e "packages/query-map[dev,release]"
 ```
 
 Run tests:
@@ -51,13 +51,13 @@ Build a package locally:
 
 ```bash
 python -m build packages/catalog-core
-python -m build packages/querymap
+python -m build packages/query-map
 ```
 
 ## Contract Docs
 
 - [`packages/catalog-core/docs/contract.md`](packages/catalog-core/docs/contract.md)
-- [`packages/querymap/docs/limitations.md`](packages/querymap/docs/limitations.md)
+- [`packages/query-map/docs/limitations.md`](packages/query-map/docs/limitations.md)
 
 ## License
 

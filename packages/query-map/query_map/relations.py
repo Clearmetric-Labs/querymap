@@ -1,4 +1,4 @@
-"""Relation discovery for querymap."""
+"""Relation discovery for query-map."""
 
 from __future__ import annotations
 

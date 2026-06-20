@@ -1,4 +1,4 @@
-"""Artifact assembly for querymap."""
+"""Artifact assembly for query-map."""
 
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ _QUERYMAP_WARNING_CODES = {
 
 
 def build_query_map_from_parsed(parsed: ParsedStatement) -> QueryMap:
-    """Build the public querymap artifact for one parsed SQL statement."""
+    """Build the public query-map artifact for one parsed SQL statement."""
     artifact, relation_extraction = _build_catalog_artifact_from_parsed(parsed)
 
     edges = [_relation_edge_from_catalog_edge(edge) for edge in artifact.edges]
@@ -199,7 +199,7 @@ def _is_equality_join(expression: Any) -> bool:
 def _relation_edge_from_catalog_edge(edge: Edge) -> RelationEdge:
     if edge.kind not in _QUERYMAP_EDGE_KINDS:
         raise QueryMapContractError(
-            f"querymap cannot emit unsupported edge kind {edge.kind!r} in its public contract."
+            f"query-map cannot emit unsupported edge kind {edge.kind!r} in its public contract."
         )
     sql = edge.evidence[0].expression if edge.evidence else None
     return RelationEdge(
@@ -216,7 +216,7 @@ def _relation_edge_from_catalog_edge(edge: Edge) -> RelationEdge:
 def _warning_entry_from_warning(warning: Warning) -> WarningEntry:
     if warning.code not in _QUERYMAP_WARNING_CODES:
         raise QueryMapContractError(
-            f"querymap cannot emit unsupported warning code {warning.code!r} in its public contract."
+            f"query-map cannot emit unsupported warning code {warning.code!r} in its public contract."
         )
     return WarningEntry(
         code=cast(WarningCode, warning.code),

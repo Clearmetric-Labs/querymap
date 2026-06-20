@@ -1,4 +1,4 @@
-"""Public artifact models for querymap."""
+"""Public artifact models for query-map."""
 
 from __future__ import annotations
 

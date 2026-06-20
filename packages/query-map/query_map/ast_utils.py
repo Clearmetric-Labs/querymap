@@ -1,4 +1,4 @@
-"""Shared sqlglot AST helpers for querymap."""
+"""Shared sqlglot AST helpers for query-map."""
 
 from __future__ import annotations
 

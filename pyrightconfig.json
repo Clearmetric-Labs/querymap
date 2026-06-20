@@ -7,6 +7,6 @@
   "venv": ".venv",
   "extraPaths": [
     "packages/catalog-core",
-    "packages/querymap"
+    "packages/query-map"
   ]
 }

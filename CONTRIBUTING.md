@@ -10,7 +10,7 @@ Create a virtual environment and install the packages you need in editable mode:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install -e packages/catalog-core
-python -m pip install -e "packages/querymap[dev,release]"
+python -m pip install -e "packages/query-map[dev,release]"
 ```
 
 ## Run The Checks
@@ -25,9 +25,9 @@ Build and validate packages before release-facing changes:
 
 ```bash
 python -m build packages/catalog-core
-python -m build packages/querymap
+python -m build packages/query-map
 twine check packages/catalog-core/dist/*
-twine check packages/querymap/dist/*
+twine check packages/query-map/dist/*
 ```
 
 ## Release Workflow

@@ -6,7 +6,7 @@ Install the shared core first, then any tool package that depends on it:
 
 ```bash
 python -m pip install -e packages/catalog-core
-python -m pip install -e "packages/querymap[dev,release]"
+python -m pip install -e "packages/query-map[dev,release]"
 ```
 
 ## Tests
@@ -21,7 +21,7 @@ Run package-focused tests:
 
 ```bash
 pytest -v packages/catalog-core/tests
-pytest -v packages/querymap/tests
+pytest -v packages/query-map/tests
 ```
 
 ## Builds
@@ -30,5 +30,5 @@ Build packages independently:
 
 ```bash
 python -m build packages/catalog-core
-python -m build packages/querymap
+python -m build packages/query-map
 ```

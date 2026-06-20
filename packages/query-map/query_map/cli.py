@@ -1,4 +1,4 @@
-"""CLI entrypoint for querymap."""
+"""CLI entrypoint for query-map."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from .errors import QueryMapError
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="querymap",
+        prog="query-map",
         description="Map one supported SQL statement into deterministic catalog dependencies.",
     )
     parser.add_argument(
@@ -53,7 +53,7 @@ def main(argv: list[str] | None = None) -> int:
             print(render_text(artifact))
         return 0
     except (OSError, QueryMapError) as exc:
-        print(f"querymap error: {exc}", file=sys.stderr)
+        print(f"query-map error: {exc}", file=sys.stderr)
         return 1
 
 

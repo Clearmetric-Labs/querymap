@@ -1,4 +1,4 @@
-"""Text renderer for querymap."""
+"""Text renderer for query-map."""
 
 from __future__ import annotations
 
@@ -6,11 +6,11 @@ from ..models import QueryMap
 
 
 def render_text(query_map: QueryMap) -> str:
-    """Render the public querymap artifact for human reading."""
+    """Render the public query-map artifact for human reading."""
     lines: list[str] = []
     summary = query_map.summary
 
-    lines.append("querymap")
+    lines.append("query-map")
     lines.append(f"dialect: {summary.dialect}")
     lines.append(f"statement_type: {summary.statement_type}")
     lines.append(f"has_ctes: {summary.has_ctes}")

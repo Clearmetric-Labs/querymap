@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from querymap import build_catalog_artifact, build_query_map, render_json
+from query_map import build_catalog_artifact, build_query_map, render_json
 
 
 def _read_example(name: str) -> str:

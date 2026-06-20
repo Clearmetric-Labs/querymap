@@ -1,6 +1,6 @@
-# querymap
+# query-map
 
-`querymap` maps one supported SQL statement into a deterministic `QueryMap`
+`query-map` maps one supported SQL statement into a deterministic `QueryMap`
 artifact so you can answer "what feeds what in this query?" fast.
 
 It is a narrow static-analysis tool:
@@ -14,7 +14,7 @@ It is a narrow static-analysis tool:
 ## Install
 
 ```bash
-python -m pip install querymap
+python -m pip install query-map
 ```
 
 For local development:
@@ -27,13 +27,13 @@ python -m pip install -e ".[dev,release]"
 ## Quickstart
 
 ```bash
-querymap --dialect postgres ./examples/ugly_real_world.sql
-querymap --dialect postgres --format json ./examples/ugly_real_world.sql
+query-map --dialect postgres ./examples/ugly_real_world.sql
+query-map --dialect postgres --format json ./examples/ugly_real_world.sql
 ```
 
 ## Output Contract
 
-`querymap` preserves its public `QueryMap` shape:
+`query-map` preserves its public `QueryMap` shape:
 
 - `summary`
 - `relations`
@@ -54,7 +54,7 @@ The shared core artifact contains:
 
 ## Supported Statements
 
-`querymap` accepts exactly one supported statement per invocation:
+`query-map` accepts exactly one supported statement per invocation:
 
 - `SELECT ...`
 - `INSERT ... SELECT ...`
