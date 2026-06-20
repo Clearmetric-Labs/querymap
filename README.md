@@ -1,20 +1,33 @@
 # CatalogKit
 
-CatalogKit is a lightweight Python monorepo for headless catalog and lineage
-tools. Shared graph rules live in `catalogkit-core`, and packages compose
-through that core without duplicating shared logic or shared validation
-behavior.
+**CatalogKit** is a lightweight, modular toolkit for building data catalog and
+lineage systems.
+
+Many catalog tools are expensive, platform-heavy, or more than a small team
+needs. CatalogKit takes a simpler approach: headless, deterministic primitives
+that extract structure from the SQL and analytics code you already have, then
+emit it as a clean, mergeable artifact. Install only what you need, compose the
+pieces yourself, and build the catalog or lineage layer your team actually
+wants without standing up a full platform.
+
+Start with one query. `catalogkit-query` maps a single SQL statement into its
+relations and dependencies, so you can understand inherited SQL fast.
+
+## How It Works
+
+CatalogKit is a Python monorepo of independently installable packages. Shared
+graph models, canonical IDs, serialization, merge semantics, and validation
+rules live in `catalogkit-core`. Each tool composes through that core and never
+depends on another tool, so independent tools can produce graphs that merge
+cleanly.
 
 ## Packages
 
-- `packages/catalogkit-core`: shared artifact models, canonical ID normalization,
-  JSON serialization, merge semantics, and validation rules
-- `packages/catalogkit-query`: SQL structure mapping for one statement at a time, with
-  its existing public `QueryMap` contract preserved
-- `packages/catalogkit`: thin meta-package for convenience installs only
-
-Tool packages depend on `catalogkit-core`. Tool packages do not depend on each
-other.
+- `catalogkit-core` - shared artifact models, canonical IDs, serialization,
+  merge, and validation
+- `catalogkit-query` - single-statement SQL structure mapping that preserves the
+  `QueryMap` contract
+- `catalogkit` - thin meta-package for convenience installs
 
 ## Install
 
