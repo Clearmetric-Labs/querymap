@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.7 - 2026-06-21
+
+### Changed
+
+- refreshed the root README to lead with the code-derived catalog positioning, a verified compile snippet, and accurate tool descriptions
+- `build_openlineage_export` now accepts a pre-built `CatalogArtifact`, so OpenLineage export can chain after `build_catalog_artifact` without reloading the project
+
 ## 0.1.2 - 2026-06-20
 
 ### Changed

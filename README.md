@@ -19,7 +19,7 @@ tree:
 
 Ask any column *"what feeds this?"* or *"what breaks if I change it?"* and get a real answer, traced from your code.
 
-> **Status:** early development (0.x), release 0.1.6. Pin your versions.
+> **Status:** early development (0.x), release 0.1.7. Pin your versions.
 
 ## Why it's different
 
