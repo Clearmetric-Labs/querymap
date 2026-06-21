@@ -13,5 +13,4 @@ __pycache__/
 build/
 dist/
 htmlcov/
-STRATEGY.md
 uv.lock
