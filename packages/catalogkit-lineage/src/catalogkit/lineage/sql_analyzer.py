@@ -85,14 +85,15 @@ def filter_value_lineage_refs(
     filter_expr = _value_filter_expression(root)
     if filter_expr is None:
         return selected_refs
+    value_columns = _value_columns(filter_expr)
     allowed_refs = {
         normalize_identifier(column.sql())
-        for column in _value_columns(filter_expr)
+        for column in value_columns
         if _is_qualified_column(column)
     }
     allowed_column_names = {
         normalize_identifier_part(column.name)
-        for column in _value_columns(filter_expr)
+        for column in value_columns
         if column.name
     }
     return {

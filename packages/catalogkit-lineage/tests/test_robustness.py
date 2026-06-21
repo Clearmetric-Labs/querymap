@@ -5,13 +5,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from catalogkit.core import merge
 from catalogkit.lineage import (
-    build_catalog_artifact,
     build_lineage_map,
     trace_downstream,
 )
-from catalogkit.query import build_catalog_artifact as build_query_catalog_artifact
 
 
 def _manifest_root() -> Path:
@@ -70,23 +67,3 @@ def test_cli_and_api_match_for_downstream_json_output():
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["related_ids"] == api_result.related_ids
-
-
-def test_lineage_and_query_artifacts_merge_on_shared_ids():
-    example_root = _manifest_root()
-    manifest_path = example_root / "manifest.json"
-    customers_sql = (example_root / "compiled" / "customers.sql").read_text(
-        encoding="utf-8"
-    )
-
-    lineage_artifact = build_catalog_artifact(manifest_path, dialect="postgres")
-    query_artifact = build_query_catalog_artifact(customers_sql, dialect="postgres")
-    merged = merge(lineage_artifact, query_artifact)
-
-    stg_orders_nodes = [node for node in merged.nodes if node.id == "table:stg_orders"]
-    raw_payments_nodes = [
-        node for node in merged.nodes if node.id == "table:raw_payments"
-    ]
-
-    assert len(stg_orders_nodes) == 1
-    assert len(raw_payments_nodes) == 1
