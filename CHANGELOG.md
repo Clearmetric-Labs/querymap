@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.8 - 2026-06-21
+
+### Changed
+
+- aligned all CatalogKit packages to lockstep versioning at `0.1.8`
+- updated the meta-package to require `catalogkit-core`, `catalogkit-query`, and `catalogkit-lineage` at the same release
+
 ## 0.1.7 - 2026-06-21
 
 ### Changed
