@@ -50,6 +50,14 @@ Growing toward a catalog that lives in your repo and is enforced in CI — one s
 
 Static analysis only — no warehouse connection. On star-heavy SQL (`SELECT *` without schema), it flags what it can't resolve. [Full limitations →](packages/catalogkit-lineage/docs/limitations.md)
 
+## Feedback & contact
+
+Built in the open, and feedback shapes the roadmap.
+
+- **Bugs / feature requests:** [open an issue](https://github.com/Clearmetric-Labs/CatalogKit/issues)
+- **Questions / ideas:** [Discussions](https://github.com/Clearmetric-Labs/CatalogKit/discussions)
+- **Using it or want to talk?** Reach out on [LinkedIn](https://www.linkedin.com/in/kim-jon) — happy to hear how it's working for you.
+
 [Apache 2.0](LICENSE).
 
 ---
