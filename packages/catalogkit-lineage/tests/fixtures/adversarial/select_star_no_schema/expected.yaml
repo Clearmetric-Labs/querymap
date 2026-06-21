@@ -1,0 +1,6 @@
+dialect: postgres
+mode: warnings
+derives_from: []
+warnings:
+  - {code: select_star, dataset: report}
+  - {code: unresolved_star_source, dataset: report}

@@ -11,11 +11,11 @@ from catalogkit.lineage.cli import main
 
 
 def _example_root() -> Path:
-    return Path(__file__).resolve().parents[1] / "examples" / "jaffle_shop"
+    return Path(__file__).resolve().parent / "fixtures" / "projects" / "jaffle_shop"
 
 
 def _folder_example_root() -> Path:
-    return Path(__file__).resolve().parents[1] / "examples" / "sql_folder"
+    return Path(__file__).resolve().parent / "fixtures" / "projects" / "sql_folder"
 
 
 def test_cli_text_output_for_manifest(capsys):
@@ -56,6 +56,7 @@ def test_cli_downstream_output(capsys):
 
     captured = capsys.readouterr()
     assert exit_code == 0
+    assert "tree:" in captured.out
     assert "column:customer_totals.total_amount" in captured.out
 
 
@@ -72,9 +73,63 @@ def test_cli_openlineage_output(capsys):
     assert payload["job"]["name"] == "jaffle_shop"
 
 
+def test_cli_upstream_json_output(capsys):
+    compiled_dir = _folder_example_root()
+
+    exit_code = main(
+        [
+            "--dialect",
+            "postgres",
+            "--format",
+            "json",
+            "--upstream",
+            "customers_report.customer_lifetime_value",
+            str(compiled_dir),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["selection_id"] == "column:customers_report.customer_lifetime_value"
+    assert payload["related_ids"] == [
+        "column:customer_totals.total_amount",
+        "column:orders_base.amount",
+        "column:raw_orders.amount",
+    ]
+
+
+def test_cli_mermaid_output_for_downstream(capsys):
+    compiled_dir = _folder_example_root()
+
+    exit_code = main(
+        [
+            "--dialect",
+            "postgres",
+            "--format",
+            "mermaid",
+            "--downstream",
+            "orders_base.amount",
+            str(compiled_dir),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "flowchart TD" in captured.out
+    assert "column_orders_base_amount" in captured.out
+
+
 def test_module_entrypoint_runs_from_package_root():
     package_root = Path(__file__).resolve().parents[1]
-    manifest_path = package_root / "examples" / "jaffle_shop" / "manifest.json"
+    manifest_path = (
+        package_root
+        / "tests"
+        / "fixtures"
+        / "projects"
+        / "jaffle_shop"
+        / "manifest.json"
+    )
 
     result = subprocess.run(
         [

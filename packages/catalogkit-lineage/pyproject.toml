@@ -39,6 +39,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
+    "PyYAML",
 ]
 release = [
     "build>=1.2.2",

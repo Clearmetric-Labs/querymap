@@ -32,7 +32,14 @@ def test_merge_unions_node_and_edge_evidence():
                 ],
             )
         ],
-        warnings=[Warning(code="select_star", message="star", location="*")],
+        warnings=[
+            Warning(
+                code="select_star",
+                message="star",
+                location="*",
+                subject_id="column:analytics.orders.id",
+            )
+        ],
     )
     right = CatalogArtifact(
         nodes=[
@@ -57,7 +64,14 @@ def test_merge_unions_node_and_edge_evidence():
                 ],
             )
         ],
-        warnings=[Warning(code="select_star", message="star", location="*")],
+        warnings=[
+            Warning(
+                code="select_star",
+                message="star",
+                location="*",
+                subject_id="column:analytics.orders.id",
+            )
+        ],
     )
 
     merged = merge(left, right)
@@ -67,6 +81,36 @@ def test_merge_unions_node_and_edge_evidence():
     assert len(merged.edges) == 1
     assert len(merged.edges[0].evidence) == 2
     assert len(merged.warnings) == 1
+
+
+def test_merge_keeps_distinct_warnings_by_subject_id():
+    left = CatalogArtifact(
+        warnings=[
+            Warning(
+                code="unresolved_lineage",
+                message="example",
+                location="orders.sql",
+                subject_id="column:orders.amount",
+            )
+        ]
+    )
+    right = CatalogArtifact(
+        warnings=[
+            Warning(
+                code="unresolved_lineage",
+                message="example",
+                location="orders.sql",
+                subject_id="column:orders.customer_id",
+            )
+        ]
+    )
+
+    merged = merge(left, right)
+
+    assert [warning.subject_id for warning in merged.warnings] == [
+        "column:orders.amount",
+        "column:orders.customer_id",
+    ]
 
 
 def test_merge_fails_on_conflicting_node_attributes():

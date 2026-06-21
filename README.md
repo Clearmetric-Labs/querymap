@@ -3,7 +3,8 @@
 **CatalogKit** is a lightweight, modular toolkit for building data catalog and
 lineage systems.
 
-**Status:** CatalogKit is in early development (0.x). It works and is usable today, but the artifact contract is still stabilizing and may change before 1.0. Pin versions for anything you depend on.
+**Status:** CatalogKit is in early development (0.x). Current release: **0.1.4**.
+Pin versions for anything you depend on.
 
 Many catalog tools are expensive, platform-heavy, or more than a small team
 needs. CatalogKit takes a simpler approach: headless, deterministic primitives
@@ -12,8 +13,14 @@ emit it as a clean, mergeable artifact. Install only what you need, compose the
 pieces yourself, and build the catalog or lineage layer your team actually
 wants without standing up a full platform.
 
+**Launch claim:** correct where resolvable, explicit where not, no credentials.
+Not universal dbt column lineage.
+
 Start with one query. `catalogkit-query` maps a single SQL statement into its
 relations and dependencies, so you can understand inherited SQL fast.
+
+`catalogkit-lineage` maps project-level column impact across dbt manifests or SQL
+folders for pre-merge change analysis.
 
 ## How It Works
 

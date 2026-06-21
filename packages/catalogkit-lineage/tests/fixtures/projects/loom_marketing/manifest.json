@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "project_name": "loom_marketing",
+    "source": "p-munhoz/dbt-loom-multi-project-demo",
+    "ref": "fddd6600448f13e8b945958630a1ec0abe959bc3"
+  },
+  "nodes": {
+    "source.loom_marketing.dim_customers": {
+      "resource_type": "source",
+      "name": "dim_customers",
+      "unique_id": "source.synthetic.dim_customers",
+      "columns": {
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "customer_name": {
+          "name": "customer_name"
+        },
+        "customer_tier": {
+          "name": "customer_tier"
+        }
+      }
+    },
+    "seed.loom_marketing.campaign_events": {
+      "resource_type": "seed",
+      "name": "campaign_events",
+      "unique_id": "seed.synthetic.campaign_events",
+      "columns": {
+        "event_id": {
+          "name": "event_id"
+        },
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "campaign_channel": {
+          "name": "campaign_channel"
+        },
+        "clicks": {
+          "name": "clicks"
+        }
+      }
+    },
+    "model.loom_marketing.fct_clicks_by_customer": {
+      "resource_type": "model",
+      "name": "fct_clicks_by_customer",
+      "unique_id": "model.synthetic.fct_clicks_by_customer",
+      "compiled_code": "with customers as (\n  select *\n  from dim_customers\n),\nevents as (\n  select\n    cast(event_id as integer) as event_id,\n    cast(customer_id as integer) as customer_id,\n    cast(clicks as integer) as clicks\n  from campaign_events\n)\nselect\n  c.customer_id,\n  c.customer_name,\n  c.customer_tier,\n  sum(e.clicks) as total_clicks\nfrom events e\njoin customers c\n  on e.customer_id = c.customer_id\ngroup by 1, 2, 3\norder by 1",
+      "depends_on": {
+        "nodes": [
+          "source.loom_marketing.dim_customers",
+          "seed.loom_marketing.campaign_events"
+        ]
+      },
+      "columns": {
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "customer_name": {
+          "name": "customer_name"
+        },
+        "customer_tier": {
+          "name": "customer_tier"
+        },
+        "total_clicks": {
+          "name": "total_clicks"
+        }
+      }
+    }
+  },
+  "child_map": {
+    "source.loom_marketing.dim_customers": [
+      "model.loom_marketing.fct_clicks_by_customer"
+    ],
+    "seed.loom_marketing.campaign_events": [
+      "model.loom_marketing.fct_clicks_by_customer"
+    ],
+    "model.loom_marketing.fct_clicks_by_customer": []
+  }
+}

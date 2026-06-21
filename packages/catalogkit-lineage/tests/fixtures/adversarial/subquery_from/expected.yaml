@@ -1,0 +1,5 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:report.order_id, column:raw_orders.id]
+warnings: []

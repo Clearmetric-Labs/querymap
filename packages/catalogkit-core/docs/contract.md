@@ -111,6 +111,10 @@ composition path.
 
 - Warnings dedupe by their stable structural fields: `code`, `message`, and
   `location`.
+- Warnings may optionally include `subject_id` when they are scoped to a
+  specific canonical entity such as a `column:` node.
+- When present, `subject_id` participates in warning dedupe alongside `code`,
+  `message`, and `location`.
 
 ## Canonical ID Rules
 

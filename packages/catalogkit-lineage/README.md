@@ -13,6 +13,12 @@ It is a headless static-analysis tool:
 - no dbt execution
 - no AI key
 
+The trust model is intentionally simple: every local-model column is either
+resolved, or explicitly flagged with a warning. `catalogkit-lineage` is built
+for **value-lineage impact analysis** ("what downstream values change if this
+column changes?"), not universal "every place this column is referenced"
+analysis.
+
 ## Install
 
 ```bash
@@ -45,17 +51,17 @@ python -m pip install -e ".[dev,release]"
 Manifest input:
 
 ```bash
-catalogkit-lineage --dialect postgres ./examples/jaffle_shop/manifest.json
-catalogkit-lineage --dialect postgres --format json ./examples/jaffle_shop/manifest.json
-catalogkit-lineage --dialect postgres --format openlineage ./examples/jaffle_shop/manifest.json
+catalogkit-lineage --dialect postgres ./tests/fixtures/projects/jaffle_shop/manifest.json
+catalogkit-lineage --dialect postgres --format json ./tests/fixtures/projects/jaffle_shop/manifest.json
+catalogkit-lineage --dialect postgres --format openlineage ./tests/fixtures/projects/jaffle_shop/manifest.json
 ```
 
 Folder input:
 
 ```bash
-catalogkit-lineage --dialect postgres ./examples/sql_folder
-catalogkit-lineage --dialect postgres --upstream customers_report.customer_lifetime_value ./examples/sql_folder
-catalogkit-lineage --dialect postgres --downstream orders_base.amount ./examples/sql_folder
+catalogkit-lineage --dialect postgres ./tests/fixtures/projects/sql_folder
+catalogkit-lineage --dialect postgres --upstream customers_report.customer_lifetime_value ./tests/fixtures/projects/sql_folder
+catalogkit-lineage --dialect postgres --downstream orders_base.amount ./tests/fixtures/projects/sql_folder
 ```
 
 ## Output Contract

@@ -1,0 +1,6 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:valid.amount, column:raw_orders.amount]
+warnings:
+  - {code: lineage_resolution_failed, dataset: broken}

@@ -1,0 +1,9 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:orders.amount, column:raw_orders.amount]
+  - [column:orders.customer_id, column:raw_orders.customer_id]
+  - [column:report.amount, column:orders.amount]
+  - [column:report.customer_id, column:orders.customer_id]
+  - [column:report.customer_total, column:orders.amount]
+warnings: []

@@ -65,6 +65,16 @@ Run the local test suite:
 pytest -v
 ```
 
+Lineage corpus invariants require the dev extra (PyYAML for ground-truth probes):
+
+```bash
+python -m pip install -e "packages/catalogkit-lineage[dev]"
+python -m pytest -v packages/catalogkit-lineage/tests/test_corpus_invariants.py \
+  packages/catalogkit-lineage/tests/test_ground_truth.py
+PYTHONPATH=packages/catalogkit-lineage \
+  python packages/catalogkit-lineage/scripts/sweep_lineage_coverage.py
+```
+
 Build and validate packages before release-facing changes:
 
 ```bash

@@ -8,6 +8,7 @@ import sys
 
 from . import __version__
 from .api import (
+    build_catalog_artifact,
     build_lineage_map,
     build_openlineage_export,
     render_json,
@@ -16,7 +17,8 @@ from .api import (
     trace_upstream,
 )
 from .errors import LineageError
-from .render.text import render_traversal_text
+from .render.mermaid import render_traversal_mermaid
+from .render.text import render_traversal_tree
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -35,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--format",
-        choices=("text", "json", "openlineage"),
+        choices=("text", "json", "openlineage", "mermaid"),
         default="text",
         help="Renderer output format.",
     )
@@ -84,8 +86,28 @@ def main(argv: list[str] | None = None) -> int:
                         result.model_dump(mode="json"), indent=2, sort_keys=False
                     )
                 )
+            elif args.format == "mermaid":
+                artifact = build_catalog_artifact(
+                    args.project_input, dialect=args.dialect
+                )
+                print(
+                    render_traversal_mermaid(
+                        result.selection_id,
+                        artifact,
+                        direction="upstream",
+                    )
+                )
             else:
-                print(render_traversal_text(result, label="upstream"))
+                artifact = build_catalog_artifact(
+                    args.project_input, dialect=args.dialect
+                )
+                print(
+                    render_traversal_tree(
+                        result,
+                        artifact,
+                        direction="upstream",
+                    )
+                )
             return 0
 
         if args.downstream:
@@ -100,9 +122,34 @@ def main(argv: list[str] | None = None) -> int:
                         result.model_dump(mode="json"), indent=2, sort_keys=False
                     )
                 )
+            elif args.format == "mermaid":
+                artifact = build_catalog_artifact(
+                    args.project_input, dialect=args.dialect
+                )
+                print(
+                    render_traversal_mermaid(
+                        result.selection_id,
+                        artifact,
+                        direction="downstream",
+                    )
+                )
             else:
-                print(render_traversal_text(result, label="downstream"))
+                artifact = build_catalog_artifact(
+                    args.project_input, dialect=args.dialect
+                )
+                print(
+                    render_traversal_tree(
+                        result,
+                        artifact,
+                        direction="downstream",
+                    )
+                )
             return 0
+
+        if args.format == "mermaid":
+            raise LineageError(
+                "Renderer format mermaid requires --upstream or --downstream."
+            )
 
         artifact = build_lineage_map(args.project_input, dialect=args.dialect)
         if args.format == "json":

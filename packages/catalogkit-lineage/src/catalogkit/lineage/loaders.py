@@ -159,7 +159,10 @@ def _read_compiled_sql(manifest_path: Path, node_payload: dict) -> str:
 
 def _compiled_path_label(node_payload: dict) -> str | None:
     compiled_path = str(node_payload.get("compiled_path") or "").strip()
-    return compiled_path or None
+    if compiled_path:
+        return compiled_path
+    name = str(node_payload.get("name") or "").strip()
+    return f"{name}.sql" if name else None
 
 
 def _resolve_manifest_relative_path(manifest_path: Path, relative_path: str) -> Path:
@@ -219,13 +222,16 @@ def _load_sql_folder_project(path: Path, *, dialect: str) -> ProjectInput:
 
     local_names = set(raw_sql_by_name)
     for dataset_name, sql in raw_sql_by_name.items():
-        dependency_names = sorted(
-            {
-                normalize_identifier(reference)
-                for reference in list_table_references(sql, dialect=dialect)
-                if normalize_identifier(reference) in local_names
-            }
-        )
+        try:
+            dependency_names = sorted(
+                {
+                    normalize_identifier(reference)
+                    for reference in list_table_references(sql, dialect=dialect)
+                    if normalize_identifier(reference) in local_names
+                }
+            )
+        except LineageInputError:
+            dependency_names = []
         current = datasets[dataset_name]
         datasets[dataset_name] = ProjectDataset(
             name=current.name,

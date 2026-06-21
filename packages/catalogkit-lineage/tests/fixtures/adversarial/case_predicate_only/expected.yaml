@@ -1,0 +1,5 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:report.credit_card_amount, column:raw_payments.amount]
+warnings: []

@@ -12,7 +12,7 @@ def merge(*artifacts: CatalogArtifact) -> CatalogArtifact:
     """Merge multiple artifacts under the shared catalogkit-core rules."""
     merged_nodes: dict[str, Node] = {}
     merged_edges: dict[tuple[str, str, str], Edge] = {}
-    merged_warnings: dict[tuple[str, str, str | None], Warning] = {}
+    merged_warnings: dict[tuple[str, str, str | None, str | None], Warning] = {}
 
     for artifact in artifacts:
         for node in artifact.nodes:
@@ -29,7 +29,14 @@ def merge(*artifacts: CatalogArtifact) -> CatalogArtifact:
             )
 
         for warning in artifact.warnings:
-            merged_warnings[(warning.code, warning.message, warning.location)] = warning
+            merged_warnings[
+                (
+                    warning.code,
+                    warning.message,
+                    warning.location,
+                    warning.subject_id,
+                )
+            ] = warning
 
     return CatalogArtifact(
         version=_merge_versions([artifact.version for artifact in artifacts]),
@@ -40,7 +47,12 @@ def merge(*artifacts: CatalogArtifact) -> CatalogArtifact:
         ),
         warnings=sorted(
             merged_warnings.values(),
-            key=lambda warning: (warning.code, warning.message, warning.location or ""),
+            key=lambda warning: (
+                warning.code,
+                warning.message,
+                warning.location or "",
+                warning.subject_id or "",
+            ),
         ),
     )
 

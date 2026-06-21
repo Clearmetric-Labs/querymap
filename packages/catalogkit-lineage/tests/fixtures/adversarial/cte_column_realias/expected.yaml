@@ -1,0 +1,8 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:a.amount, column:raw_orders.amount]
+  - [column:a.id, column:raw_orders.id]
+  - [column:b.net_amount, column:a.amount]
+  - [column:b.order_id, column:a.id]
+warnings: []

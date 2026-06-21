@@ -14,6 +14,7 @@ from catalogkit.core import (
     column_id,
     leaf_name,
     merge,
+    normalize_identifier,
     schema_name,
     split_qualified_identifier,
     table_id,
@@ -22,15 +23,33 @@ from sqlglot.lineage import Node as SqlglotLineageNode
 from sqlglot.lineage import lineage
 
 from .errors import LineageContractError, LineageInputError
+from .graph import (
+    column_selection_from_id,
+    derives_from_edges,
+    walk_downstream,
+    walk_upstream,
+    warnings_for_subject,
+)
 from .loaders import ProjectDataset, ProjectInput
 from .models import LineageMap, LineageSummary, TraversalResult
-from .sql_analyzer import detect_select_star
+from .sql_analyzer import (
+    detect_select_star,
+    filter_value_lineage_refs,
+    list_table_references,
+)
 
 
 @dataclass(frozen=True)
 class BuiltLineage:
     artifact: CatalogArtifact
     summary: LineageSummary
+
+
+@dataclass
+class DatasetResolutionState:
+    output_map_keys: set[str]
+    columns_with_edges: set[str]
+    columns_with_warnings: set[str]
 
 
 def build_catalog_artifact_from_project(
@@ -68,7 +87,12 @@ def trace_upstream_from_project(
     return TraversalResult(
         selection=selection,
         selection_id=selection_id,
-        related_ids=_walk_upstream(artifact, selection_id),
+        related_ids=walk_upstream(selection_id, artifact),
+        warnings=warnings_for_subject(
+            artifact,
+            selection_id,
+            dataset_name=selection.rsplit(".", 1)[0],
+        ),
     )
 
 
@@ -84,7 +108,12 @@ def trace_downstream_from_project(
     return TraversalResult(
         selection=selection,
         selection_id=selection_id,
-        related_ids=_walk_downstream(artifact, selection_id),
+        related_ids=walk_downstream(selection_id, artifact),
+        warnings=warnings_for_subject(
+            artifact,
+            selection_id,
+            dataset_name=selection.rsplit(".", 1)[0],
+        ),
     )
 
 
@@ -94,11 +123,10 @@ def build_openlineage_export_from_project(
     dialect: str,
 ) -> dict[str, Any]:
     artifact = build_catalog_artifact_from_project(project, dialect=dialect)
-    column_edges = [edge for edge in artifact.edges if edge.kind == "derives_from"]
     input_fields_by_output: dict[tuple[str, str], set[tuple[str, str, str]]] = {}
-    for edge in column_edges:
-        output_dataset, output_column = _column_selection_from_id(edge.source_id)
-        input_dataset, input_column = _column_selection_from_id(edge.target_id)
+    for edge in derives_from_edges(artifact):
+        output_dataset, output_column = column_selection_from_id(edge.source_id)
+        input_dataset, input_column = column_selection_from_id(edge.target_id)
         input_fields_by_output.setdefault((output_dataset, output_column), set()).add(
             ("catalogkit", input_dataset, input_column)
         )
@@ -147,6 +175,7 @@ def _build_lineage(project: ProjectInput, *, dialect: str) -> BuiltLineage:
     nodes_by_id: dict[str, Node] = {}
     edges: list[Edge] = []
     warnings: list[Warning] = []
+    resolution_by_dataset: dict[str, DatasetResolutionState] = {}
 
     for dataset in project.datasets.values():
         _add_dataset_node(nodes_by_id, dataset)
@@ -158,9 +187,9 @@ def _build_lineage(project: ProjectInput, *, dialect: str) -> BuiltLineage:
     for dataset in project.datasets.values():
         if dataset.kind != "local":
             continue
-        _add_dependency_edges(edges, dataset)
+        _add_dependency_edges(nodes_by_id, edges, dataset, project=project)
         _add_query_warnings(warnings, dataset, dialect=dialect)
-        _add_lineage_edges(
+        resolution_by_dataset[dataset.name] = _add_lineage_edges(
             nodes_by_id,
             edges,
             warnings,
@@ -168,6 +197,12 @@ def _build_lineage(project: ProjectInput, *, dialect: str) -> BuiltLineage:
             project=project,
             dialect=dialect,
         )
+
+    _reconcile_column_coverage(
+        warnings,
+        project=project,
+        resolution_by_dataset=resolution_by_dataset,
+    )
 
     artifact = merge(
         CatalogArtifact(
@@ -246,9 +281,30 @@ def _add_column_node(
     )
 
 
-def _add_dependency_edges(edges: list[Edge], dataset: ProjectDataset) -> None:
+def _add_dependency_edges(
+    nodes_by_id: dict[str, Node],
+    edges: list[Edge],
+    dataset: ProjectDataset,
+    *,
+    project: ProjectInput,
+) -> None:
     source_id = table_id(dataset.name)
     for dependency_name in dataset.dependency_names:
+        _add_dataset_node(
+            nodes_by_id,
+            ProjectDataset(
+                name=dependency_name,
+                kind=(
+                    project.datasets[dependency_name].kind
+                    if dependency_name in project.datasets
+                    else "root"
+                ),
+                sql=None,
+                dependency_names=(),
+                declared_columns=(),
+                evidence_file=None,
+            ),
+        )
         edges.append(
             Edge(
                 kind="depends_on",
@@ -274,13 +330,17 @@ def _add_query_warnings(
     *,
     dialect: str,
 ) -> None:
-    if detect_select_star(dataset.sql or "", dialect=dialect):
-        warnings.append(
-            Warning(
-                code="select_star",
-                message="SELECT * was detected; output mapping may stay warning-rich.",
-                location=dataset.evidence_file,
-            )
+    try:
+        has_select_star = detect_select_star(dataset.sql or "", dialect=dialect)
+    except LineageInputError:
+        return
+    if has_select_star:
+        _emit_column_warning(
+            warnings,
+            code="select_star",
+            dataset=dataset,
+            column_name=None,
+            message="SELECT * was detected; output mapping may stay warning-rich.",
         )
 
 
@@ -292,7 +352,19 @@ def _add_lineage_edges(
     *,
     project: ProjectInput,
     dialect: str,
-) -> None:
+) -> DatasetResolutionState:
+    state = DatasetResolutionState(
+        output_map_keys=set(),
+        columns_with_edges=set(),
+        columns_with_warnings=set(),
+    )
+    try:
+        known_relation_names = {
+            normalize_identifier(reference)
+            for reference in list_table_references(dataset.sql or "", dialect=dialect)
+        }
+    except LineageInputError:
+        known_relation_names = set()
     try:
         output_map = lineage(
             None,
@@ -302,16 +374,14 @@ def _add_lineage_edges(
             dialect=dialect,
         )
     except Exception as exc:  # pragma: no cover - exercised via failure-path tests
-        warnings.append(
-            Warning(
-                code="lineage_resolution_failed",
-                message=(
-                    f"Lineage resolution failed for dataset {dataset.name!r}: {exc}"
-                ),
-                location=dataset.evidence_file,
-            )
+        _emit_column_warning(
+            warnings,
+            code="lineage_resolution_failed",
+            dataset=dataset,
+            column_name=None,
+            message=f"Lineage resolution failed for dataset {dataset.name!r}: {exc}",
         )
-        return
+        return state
 
     if not isinstance(output_map, dict):
         raise LineageContractError(
@@ -319,6 +389,18 @@ def _add_lineage_edges(
         )
 
     for output_name, root in sorted(output_map.items(), key=lambda item: item[0]):
+        if output_name == "*":
+            _emit_column_warning(
+                warnings,
+                code="unresolved_star_source",
+                dataset=dataset,
+                column_name=None,
+                message=(
+                    f"Lineage output expansion stayed at '*' for dataset {dataset.name!r}."
+                ),
+            )
+            continue
+        state.output_map_keys.add(output_name)
         _add_column_node(nodes_by_id, dataset.name, output_name, dataset.evidence_file)
         source_id = column_id(dataset.name, output_name)
         all_refs = {
@@ -332,30 +414,86 @@ def _add_lineage_edges(
             if _is_local_ref(ref, project=project, current_dataset=dataset.name)
         }
         selected_refs = local_refs or _collect_leaf_refs(root)
+        if selected_refs != {"*"}:
+            original_selected_refs = set(selected_refs)
+            filtered_refs = filter_value_lineage_refs(
+                root,
+                selected_refs,
+                dialect=dialect,
+            )
+            if not filtered_refs:
+                if "*" in original_selected_refs:
+                    _emit_column_warning(
+                        warnings,
+                        code="unresolved_star_source",
+                        dataset=dataset,
+                        column_name=output_name,
+                        message=(
+                            "Value-lineage filtering removed all upstream refs and "
+                            f"only '*' remained for {dataset.name}.{output_name}."
+                        ),
+                        state=state,
+                    )
+                else:
+                    _emit_column_warning(
+                        warnings,
+                        code="unresolved_output_source",
+                        dataset=dataset,
+                        column_name=output_name,
+                        message=(
+                            "Value-lineage filtering removed all upstream refs for "
+                            f"output column {dataset.name}.{output_name}."
+                        ),
+                        state=state,
+                    )
+                continue
+            selected_refs = filtered_refs
         if not selected_refs:
-            warnings.append(
-                Warning(
-                    code="unresolved_output_source",
-                    message=(
-                        f"Lineage resolved no upstream leaves for output column {dataset.name}.{output_name}."
-                    ),
-                    location=dataset.evidence_file,
-                )
+            _emit_column_warning(
+                warnings,
+                code="unresolved_output_source",
+                dataset=dataset,
+                column_name=output_name,
+                message=(
+                    "Lineage resolved no upstream value leaves for output column "
+                    f"{dataset.name}.{output_name}."
+                ),
+                state=state,
             )
             continue
         for leaf_ref in sorted(selected_refs):
             if leaf_ref == "*":
-                warnings.append(
-                    Warning(
-                        code="unresolved_star_source",
-                        message=(
-                            f"Lineage leaf expansion stayed at '*' for output column {dataset.name}.{output_name}."
-                        ),
-                        location=dataset.evidence_file,
-                    )
+                _emit_column_warning(
+                    warnings,
+                    code="unresolved_star_source",
+                    dataset=dataset,
+                    column_name=output_name,
+                    message=(
+                        "Lineage leaf expansion stayed at '*' for output column "
+                        f"{dataset.name}.{output_name}."
+                    ),
+                    state=state,
                 )
                 continue
             parent_name, source_column = _split_ref(leaf_ref)
+            if (
+                parent_name not in project.datasets
+                and parent_name not in project.root_schema()
+                and normalize_identifier(parent_name) not in known_relation_names
+            ):
+                _emit_column_warning(
+                    warnings,
+                    code="unresolved_output_source",
+                    dataset=dataset,
+                    column_name=output_name,
+                    message=(
+                        f"Lineage resolved relation alias {parent_name!r} instead of a "
+                        "concrete upstream dataset for output column "
+                        f"{dataset.name}.{output_name}."
+                    ),
+                    state=state,
+                )
+                continue
             _add_dataset_node(
                 nodes_by_id,
                 ProjectDataset(
@@ -387,6 +525,84 @@ def _add_lineage_edges(
                     else [],
                 )
             )
+            state.columns_with_edges.add(output_name)
+    return state
+
+
+def _reconcile_column_coverage(
+    warnings: list[Warning],
+    *,
+    project: ProjectInput,
+    resolution_by_dataset: dict[str, DatasetResolutionState],
+) -> None:
+    for dataset in project.datasets.values():
+        if dataset.kind != "local":
+            continue
+        state = resolution_by_dataset.get(
+            dataset.name,
+            DatasetResolutionState(
+                output_map_keys=set(),
+                columns_with_edges=set(),
+                columns_with_warnings=set(),
+            ),
+        )
+        column_names = sorted({*dataset.declared_columns, *state.output_map_keys})
+        for column_name in column_names:
+            subject_id = column_id(dataset.name, column_name)
+            if column_name in state.columns_with_edges or _warning_exists(
+                warnings,
+                code="unresolved_lineage",
+                subject_id=subject_id,
+            ):
+                continue
+            _emit_column_warning(
+                warnings,
+                code="unresolved_lineage",
+                dataset=dataset,
+                column_name=column_name,
+                message=(
+                    "Lineage could not be resolved for output column "
+                    f"{dataset.name}.{column_name}."
+                ),
+                state=state,
+            )
+
+
+def _emit_column_warning(
+    warnings: list[Warning],
+    *,
+    code: str,
+    dataset: ProjectDataset,
+    column_name: str | None,
+    message: str,
+    state: DatasetResolutionState | None = None,
+) -> None:
+    warnings.append(
+        Warning(
+            code=code,
+            message=message,
+            location=dataset.evidence_file,
+            subject_id=(
+                column_id(dataset.name, column_name)
+                if column_name is not None
+                else None
+            ),
+        )
+    )
+    if state is not None and column_name is not None:
+        state.columns_with_warnings.add(column_name)
+
+
+def _warning_exists(
+    warnings: list[Warning],
+    *,
+    code: str,
+    subject_id: str,
+) -> bool:
+    return any(
+        warning.code == code and warning.subject_id == subject_id
+        for warning in warnings
+    )
 
 
 def _collect_leaf_refs(node: SqlglotLineageNode) -> set[str]:
@@ -436,13 +652,6 @@ def _selection_to_column_id(selection: str) -> str:
     return column_id(parent_name, column_name)
 
 
-def _column_selection_from_id(node_id: str) -> tuple[str, str]:
-    if not node_id.startswith("column:"):
-        raise LineageContractError(f"Expected column node id, got {node_id!r}")
-    qualified_name = node_id[len("column:") :]
-    return _split_ref(qualified_name)
-
-
 def _require_column_selection(
     artifact: CatalogArtifact,
     *,
@@ -456,41 +665,3 @@ def _require_column_selection(
     raise LineageInputError(
         f"Selection {selection!r} does not match any resolved lineage column."
     )
-
-
-def _walk_upstream(artifact: CatalogArtifact, selection_id: str) -> list[str]:
-    adjacency: dict[str, list[str]] = {}
-    for edge in artifact.edges:
-        adjacency.setdefault(edge.source_id, []).append(edge.target_id)
-
-    visited: set[str] = set()
-    stack = [selection_id]
-    related: list[str] = []
-    while stack:
-        current = stack.pop()
-        for target_id in adjacency.get(current, []):
-            if target_id in visited:
-                continue
-            visited.add(target_id)
-            related.append(target_id)
-            stack.append(target_id)
-    return related
-
-
-def _walk_downstream(artifact: CatalogArtifact, selection_id: str) -> list[str]:
-    adjacency: dict[str, list[str]] = {}
-    for edge in artifact.edges:
-        adjacency.setdefault(edge.target_id, []).append(edge.source_id)
-
-    visited: set[str] = set()
-    stack = [selection_id]
-    related: list[str] = []
-    while stack:
-        current = stack.pop()
-        for source_id in adjacency.get(current, []):
-            if source_id in visited:
-                continue
-            visited.add(source_id)
-            related.append(source_id)
-            stack.append(source_id)
-    return related

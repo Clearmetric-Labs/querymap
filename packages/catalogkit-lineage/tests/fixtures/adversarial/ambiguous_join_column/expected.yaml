@@ -1,0 +1,10 @@
+dialect: postgres
+mode: exact_edges
+derives_from:
+  - [column:a.customer_id, column:raw_orders.customer_id]
+  - [column:a.id, column:raw_orders.id]
+  - [column:b.clicks, column:raw_clicks.clicks]
+  - [column:b.customer_id, column:raw_clicks.customer_id]
+  - [column:report.clicks, column:b.clicks]
+  - [column:report.customer_id, column:a.customer_id]
+warnings: []

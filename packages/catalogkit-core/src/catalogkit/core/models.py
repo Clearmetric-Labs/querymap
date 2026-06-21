@@ -22,6 +22,7 @@ class Warning(BaseModel):
     code: str
     message: str
     location: str | None = None
+    subject_id: str | None = None
 
 
 class Node(BaseModel):

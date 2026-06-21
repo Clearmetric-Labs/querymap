@@ -1,0 +1,76 @@
+{
+  "metadata": {
+    "project_name": "loom_finance",
+    "source": "p-munhoz/dbt-loom-multi-project-demo",
+    "ref": "fddd6600448f13e8b945958630a1ec0abe959bc3"
+  },
+  "nodes": {
+    "source.loom_finance.dim_customers": {
+      "resource_type": "source",
+      "name": "dim_customers",
+      "unique_id": "source.synthetic.dim_customers",
+      "columns": {
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "customer_name": {
+          "name": "customer_name"
+        },
+        "customer_tier": {
+          "name": "customer_tier"
+        }
+      }
+    },
+    "seed.loom_finance.orders": {
+      "resource_type": "seed",
+      "name": "orders",
+      "unique_id": "seed.synthetic.orders",
+      "columns": {
+        "order_id": {
+          "name": "order_id"
+        },
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "amount": {
+          "name": "amount"
+        }
+      }
+    },
+    "model.loom_finance.fct_revenue_by_customer": {
+      "resource_type": "model",
+      "name": "fct_revenue_by_customer",
+      "unique_id": "model.synthetic.fct_revenue_by_customer",
+      "compiled_code": "with customers as (\n  select *\n  from dim_customers\n),\norders as (\n  select\n    cast(order_id as integer) as order_id,\n    cast(customer_id as integer) as customer_id,\n    cast(amount as double) as amount\n  from orders\n)\nselect\n  c.customer_id,\n  c.customer_name,\n  c.customer_tier,\n  sum(o.amount) as total_revenue\nfrom orders o\njoin customers c\n  on o.customer_id = c.customer_id\ngroup by 1, 2, 3\norder by 1",
+      "depends_on": {
+        "nodes": [
+          "source.loom_finance.dim_customers",
+          "seed.loom_finance.orders"
+        ]
+      },
+      "columns": {
+        "customer_id": {
+          "name": "customer_id"
+        },
+        "customer_name": {
+          "name": "customer_name"
+        },
+        "customer_tier": {
+          "name": "customer_tier"
+        },
+        "total_revenue": {
+          "name": "total_revenue"
+        }
+      }
+    }
+  },
+  "child_map": {
+    "source.loom_finance.dim_customers": [
+      "model.loom_finance.fct_revenue_by_customer"
+    ],
+    "seed.loom_finance.orders": [
+      "model.loom_finance.fct_revenue_by_customer"
+    ],
+    "model.loom_finance.fct_revenue_by_customer": []
+  }
+}

@@ -11,11 +11,11 @@ from catalogkit.lineage import (
 
 
 def _example_root() -> Path:
-    return Path(__file__).resolve().parents[1] / "examples" / "jaffle_shop"
+    return Path(__file__).resolve().parent / "fixtures" / "projects" / "jaffle_shop"
 
 
 def _folder_example_root() -> Path:
-    return Path(__file__).resolve().parents[1] / "examples" / "sql_folder"
+    return Path(__file__).resolve().parent / "fixtures" / "projects" / "sql_folder"
 
 
 def test_build_lineage_map_from_manifest():
@@ -26,39 +26,15 @@ def test_build_lineage_map_from_manifest():
     assert lineage_map.summary.input_kind == "dbt_manifest"
     assert lineage_map.summary.dataset_count >= 8
     assert lineage_map.summary.column_count >= 20
-    assert any(node.id == "table:customers" for node in lineage_map.nodes)
-    assert any(
-        edge.source_id == "column:customers.customer_lifetime_value"
-        and edge.target_id == "column:stg_payments.amount"
-        for edge in lineage_map.edges
-    )
-    assert any(warning.code == "select_star" for warning in lineage_map.warnings)
 
 
-def test_folder_input_supports_traversal():
+def test_folder_input_builds_successfully():
     compiled_dir = _folder_example_root()
 
     lineage_map = build_lineage_map(compiled_dir, dialect="postgres")
-    downstream = trace_downstream(
-        compiled_dir,
-        dialect="postgres",
-        selection="orders_base.amount",
-    )
-    upstream = trace_upstream(
-        compiled_dir,
-        dialect="postgres",
-        selection="customers_report.customer_lifetime_value",
-    )
 
     assert lineage_map.summary.input_kind == "sql_folder"
     assert lineage_map.warnings == []
-    assert "column:customer_totals.total_amount" in downstream.related_ids
-    assert "column:customers_report.customer_lifetime_value" in downstream.related_ids
-    assert upstream.related_ids == [
-        "column:customer_totals.total_amount",
-        "column:orders_base.amount",
-        "column:raw_orders.amount",
-    ]
 
 
 def test_openlineage_export_contains_column_lineage_entries():
@@ -99,4 +75,34 @@ def test_openlineage_export_groups_multiple_inputs_per_output_column(tmp_path: P
     assert grouped_entries[0]["inputFields"] == [
         {"namespace": "catalogkit", "name": "source_a", "field": "amount"},
         {"namespace": "catalogkit", "name": "source_b", "field": "amount"},
+    ]
+
+
+def test_jaffle_case_amount_columns_exclude_payment_method_predicate():
+    manifest_path = _example_root() / "manifest.json"
+
+    credit_card_upstream = trace_upstream(
+        manifest_path,
+        dialect="postgres",
+        selection="orders.credit_card_amount",
+    )
+    amount_upstream = trace_upstream(
+        manifest_path,
+        dialect="postgres",
+        selection="orders.amount",
+    )
+    payment_method_downstream = trace_downstream(
+        manifest_path,
+        dialect="postgres",
+        selection="raw_payments.payment_method",
+    )
+
+    assert "column:raw_payments.amount" in credit_card_upstream.related_ids
+    assert not any(
+        "payment_method" in related_id
+        for related_id in credit_card_upstream.related_ids
+    )
+    assert "column:raw_payments.amount" in amount_upstream.related_ids
+    assert payment_method_downstream.related_ids == [
+        "column:stg_payments.payment_method"
     ]

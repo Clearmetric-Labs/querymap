@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "project_name": "star_schema"
+  },
+  "nodes": {
+    "seed.star_schema.raw_orders": {
+      "resource_type": "seed",
+      "name": "raw_orders",
+      "columns": {
+        "id": {
+          "name": "id"
+        },
+        "amount": {
+          "name": "amount"
+        }
+      }
+    },
+    "model.star_schema.report": {
+      "resource_type": "model",
+      "name": "report",
+      "compiled_path": "compiled/report.sql",
+      "depends_on": {
+        "nodes": [
+          "seed.star_schema.raw_orders"
+        ]
+      },
+      "columns": {
+        "id": {
+          "name": "id"
+        },
+        "amount": {
+          "name": "amount"
+        }
+      }
+    }
+  }
+}

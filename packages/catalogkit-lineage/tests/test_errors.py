@@ -24,7 +24,14 @@ def test_empty_sql_folder_fails_loudly(tmp_path: Path):
 
 def test_openlineage_and_traversal_flags_cannot_mix(capsys):
     package_root = Path(__file__).resolve().parents[1]
-    manifest_path = package_root / "examples" / "jaffle_shop" / "manifest.json"
+    manifest_path = (
+        package_root
+        / "tests"
+        / "fixtures"
+        / "projects"
+        / "jaffle_shop"
+        / "manifest.json"
+    )
 
     exit_code = main(
         [
@@ -44,7 +51,9 @@ def test_openlineage_and_traversal_flags_cannot_mix(capsys):
 
 
 def test_unknown_traversal_selection_fails_loudly():
-    compiled_dir = Path(__file__).resolve().parents[1] / "examples" / "sql_folder"
+    compiled_dir = (
+        Path(__file__).resolve().parent / "fixtures" / "projects" / "sql_folder"
+    )
 
     with pytest.raises(LineageInputError):
         trace_upstream(
@@ -85,3 +94,67 @@ def test_sql_folder_duplicate_dataset_names_fail_loudly(tmp_path: Path):
 
     with pytest.raises(LineageInputError, match="duplicate dataset name"):
         build_lineage_map(tmp_path, dialect="postgres")
+
+
+def test_lineage_resolution_failed_warning_is_recoverable(tmp_path: Path):
+    (tmp_path / "valid.sql").write_text(
+        "select amount from raw_orders", encoding="utf-8"
+    )
+    (tmp_path / "broken.sql").write_text("select from", encoding="utf-8")
+
+    lineage_map = build_lineage_map(tmp_path, dialect="postgres")
+
+    assert any(
+        warning.code == "lineage_resolution_failed" for warning in lineage_map.warnings
+    )
+
+
+def test_unresolved_star_source_warning_is_emitted_for_untyped_select_star_fixture():
+    fixture_root = (
+        Path(__file__).resolve().parent
+        / "fixtures"
+        / "adversarial"
+        / "select_star_no_schema"
+    )
+
+    lineage_map = build_lineage_map(fixture_root, dialect="postgres")
+
+    assert any(warning.code == "select_star" for warning in lineage_map.warnings)
+    assert any(
+        warning.code == "unresolved_star_source" for warning in lineage_map.warnings
+    )
+
+
+def test_unresolved_output_source_warning_is_emitted_for_table_star_alias_fixture():
+    fixture_root = (
+        Path(__file__).resolve().parent
+        / "fixtures"
+        / "adversarial"
+        / "table_star_alias"
+        / "manifest.json"
+    )
+
+    lineage_map = build_lineage_map(fixture_root, dialect="postgres")
+
+    assert any(warning.code == "select_star" for warning in lineage_map.warnings)
+    assert any(
+        warning.code == "unresolved_output_source" for warning in lineage_map.warnings
+    )
+
+
+def test_unresolved_lineage_warning_is_emitted_for_flagged_shopify_column():
+    manifest_path = (
+        Path(__file__).resolve().parent
+        / "fixtures"
+        / "projects"
+        / "shopify"
+        / "manifest.json"
+    )
+
+    lineage_map = build_lineage_map(manifest_path, dialect="postgres")
+
+    assert any(
+        warning.code == "unresolved_lineage"
+        and warning.subject_id == "column:stg_shopify__order.order_id"
+        for warning in lineage_map.warnings
+    )

@@ -23,6 +23,7 @@ def test_artifact_contract_shape_is_stable():
             Warning(
                 code="unsupported_construct",
                 message="example",
+                subject_id="column:analytics.orders.id",
             )
         ],
     )
@@ -32,3 +33,4 @@ def test_artifact_contract_shape_is_stable():
     assert payload["version"] == "1"
     assert list(payload.keys()) == ["version", "nodes", "edges", "warnings"]
     assert payload["nodes"][0]["schema"] == "analytics"
+    assert payload["warnings"][0]["subject_id"] == "column:analytics.orders.id"

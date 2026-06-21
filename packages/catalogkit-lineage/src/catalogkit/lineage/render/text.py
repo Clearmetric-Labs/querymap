@@ -2,6 +2,14 @@
 
 from __future__ import annotations
 
+from catalogkit.core import CatalogArtifact
+
+from ..graph import (
+    TraversalDirection,
+    build_traversal_subgraph,
+    downstream_adjacency,
+    upstream_adjacency,
+)
 from ..models import LineageMap, TraversalResult
 
 
@@ -33,14 +41,68 @@ def render_text(lineage_map: LineageMap) -> str:
     return "\n".join(lines)
 
 
-def render_traversal_text(result: TraversalResult, *, label: str) -> str:
-    """Render an upstream or downstream traversal result."""
+def render_traversal_tree(
+    result: TraversalResult,
+    artifact: CatalogArtifact,
+    *,
+    direction: TraversalDirection,
+) -> str:
+    """Render an upstream or downstream traversal tree."""
+    adjacency = (
+        upstream_adjacency(artifact)
+        if direction == "upstream"
+        else downstream_adjacency(artifact)
+    )
+    node_ids, _edges = build_traversal_subgraph(
+        result.selection_id,
+        artifact,
+        direction=direction,
+    )
+    allowed_nodes = set(node_ids)
     lines = [
         "catalogkit-lineage",
-        f"{label}: {result.selection}",
+        f"{direction}: {result.selection}",
         f"selection_id: {result.selection_id}",
-        "related_ids:",
+        "tree:",
     ]
-    for item in result.related_ids:
-        lines.append(f"  - {item}")
+    _append_tree(
+        lines,
+        node_id=result.selection_id,
+        adjacency=adjacency,
+        allowed_nodes=allowed_nodes,
+        depth=1,
+        seen=set(),
+    )
+    if result.warnings:
+        lines.append("warnings:")
+        for warning in result.warnings:
+            lines.append(f"  - {warning.code}: {warning.message}")
     return "\n".join(lines)
+
+
+def _append_tree(
+    lines: list[str],
+    *,
+    node_id: str,
+    adjacency: dict[str, list[str]],
+    allowed_nodes: set[str],
+    depth: int,
+    seen: set[str],
+) -> None:
+    indent = "  " * depth
+    suffix = " (cycle)" if node_id in seen else ""
+    lines.append(f"{indent}- {node_id}{suffix}")
+    if node_id in seen:
+        return
+    next_seen = {node_id, *seen}
+    for child_id in adjacency.get(node_id, []):
+        if child_id not in allowed_nodes:
+            continue
+        _append_tree(
+            lines,
+            node_id=child_id,
+            adjacency=adjacency,
+            allowed_nodes=allowed_nodes,
+            depth=depth + 1,
+            seen=next_seen,
+        )
