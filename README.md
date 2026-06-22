@@ -58,7 +58,7 @@ Growing toward a catalog that lives in your repo and is enforced in CI — one s
 - ◻️ **Catalog compile** — generate a browsable catalog site from your repo
 - ◻️ **Derived semantics** — surface what your SQL means, flag inconsistent metric definitions
 
-[Open an issue](https://github.com/Clearmetric-Labs/CatalogKit/issues) if there's a primitive you wish existed.
+[Open an issue](https://github.com/ClearMetric-Labs/CatalogKit/issues) if there's a primitive you wish existed.
 
 ## Limits
 
@@ -68,8 +68,8 @@ Static analysis only — no warehouse connection. On star-heavy SQL (`SELECT *` 
 
 Built in the open, and feedback shapes the roadmap.
 
-- **Bugs / features:** [open an issue](https://github.com/Clearmetric-Labs/CatalogKit/issues)
-- **Questions / ideas:** [Discussions](https://github.com/Clearmetric-Labs/CatalogKit/discussions)
+- **Bugs / features:** [open an issue](https://github.com/ClearMetric-Labs/CatalogKit/issues)
+- **Questions / ideas:** [Discussions](https://github.com/ClearMetric-Labs/CatalogKit/discussions)
 - **Using it or want to talk?** Reach out on [LinkedIn](https://www.linkedin.com/in/kim-jon).
 
 ## License

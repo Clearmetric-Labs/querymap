@@ -43,9 +43,9 @@ release = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Clearmetric-Labs/CatalogKit"
-Source = "https://github.com/Clearmetric-Labs/CatalogKit"
-Issues = "https://github.com/Clearmetric-Labs/CatalogKit/issues"
+Homepage = "https://github.com/ClearMetric-Labs/CatalogKit"
+Source = "https://github.com/ClearMetric-Labs/CatalogKit"
+Issues = "https://github.com/ClearMetric-Labs/CatalogKit/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "catalogkit.core._version.__version__"}
