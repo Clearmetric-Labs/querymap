@@ -1,0 +1,27 @@
+{
+  "name": "chart1",
+  "visual": {
+    "visualType": "clusteredColumnChart",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Property": "Total Orders",
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Orders"
+                    }
+                  }
+                }
+              },
+              "queryRef": "Orders.Total Orders"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

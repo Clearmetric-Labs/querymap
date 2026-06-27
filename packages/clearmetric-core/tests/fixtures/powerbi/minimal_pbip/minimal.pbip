@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "artifacts": [
+    {
+      "dataset": {
+        "path": "minimal.SemanticModel"
+      }
+    },
+    {
+      "report": {
+        "path": "minimal.Report"
+      }
+    }
+  ]
+}

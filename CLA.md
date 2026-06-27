@@ -17,7 +17,7 @@ To notify ClearMetric under Section 7, open an issue in the relevant project rep
 
 ## Agreement Terms
 
-By submitting a Contribution to any project managed by ClearMetric, including projects published under the ClearMetric Labs GitHub organization and the CatalogKit project, You accept and agree to the following terms for all Contributions You submit.
+By submitting a Contribution to any project managed by ClearMetric, including projects published under the ClearMetric Labs GitHub organization and the ClearMetric Core project, You accept and agree to the following terms for all Contributions You submit.
 
 ### 1. Definitions
 
@@ -27,7 +27,7 @@ By submitting a Contribution to any project managed by ClearMetric, including pr
 
 **"Submit"** means any form of electronic submission sent to ClearMetric or its representatives for the purpose of discussing, improving, or contributing to a project, including pull requests, commits, patches, issues, source code control systems, project discussion forums, and project documentation systems. A communication is not a Contribution if You conspicuously mark it in writing as **"Not a Contribution."**
 
-**"Project"** means any software, documentation, or related materials managed by ClearMetric, including the CatalogKit project and other ClearMetric Labs projects.
+**"Project"** means any software, documentation, or related materials managed by ClearMetric, including the ClearMetric Core project and other ClearMetric Labs projects.
 
 ### 2. Grant of Copyright License
 

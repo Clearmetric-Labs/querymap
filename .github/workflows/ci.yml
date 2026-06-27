@@ -19,33 +19,31 @@ jobs:
       - name: Install quality dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -e "packages/clearmetric-core[dev]"
           python -m pip install ruff pyright
-          python -m pip install -e packages/catalogkit-core
-          python -m pip install -e "packages/catalogkit-query[dev]"
-          python -m pip install -e "packages/catalogkit-lineage[dev]"
 
       - name: Run Ruff lint checks
-        run: python -m ruff check --select E,F,I --ignore E501 --target-version py310 --extend-exclude .pkgmeta --extend-exclude .pkgsmoke --extend-exclude .pkgtest .
+        run: python -m ruff check --select E,F,I --ignore E501 --target-version py311 --extend-exclude .pkgmeta --extend-exclude .pkgsmoke --extend-exclude .pkgtest .
 
       - name: Run Ruff format check
-        run: python -m ruff format --check --target-version py310 --exclude .pkgmeta --exclude .pkgsmoke --exclude .pkgtest .
+        run: python -m ruff format --check --target-version py311 --exclude .pkgmeta --exclude .pkgsmoke --exclude .pkgtest .
 
       - name: Run Pyright
         run: pyright
 
-  package-tests:
+      - name: Fail on legacy name references
+        run: |
+          if rg -i 'catalogkit' --glob '!.git' --glob '!CHANGELOG.md' --glob '!CONTRIBUTING.md' --glob '!.github/workflows/ci.yml' .; then
+            echo "legacy name references remain"
+            exit 1
+          fi
+
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        package:
-          - name: catalogkit-core
-            path: packages/catalogkit-core
-          - name: catalogkit-query
-            path: packages/catalogkit-query
-          - name: catalogkit-lineage
-            path: packages/catalogkit-lineage
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Check out repository
@@ -56,87 +54,32 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install build and test dependencies
+      - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build twine pytest
-
-      - name: Install package dependencies
-        run: |
-          if [ "${{ matrix.package.name }}" = "catalogkit-query" ] || [ "${{ matrix.package.name }}" = "catalogkit-lineage" ]; then
-            python -m pip install -e packages/catalogkit-core
-          fi
-          python -m pip install -e "${{ matrix.package.path }}[dev,release]"
+          python -m pip install -e "packages/clearmetric-core[dev,release]"
 
       - name: Run package test suite
-        run: python -m pytest -v ${{ matrix.package.path }}/tests
-
-      - name: Build distribution artifacts
-        run: |
-          python -m build ${{ matrix.package.path }}
-          if [ "${{ matrix.package.name }}" = "catalogkit-query" ] || [ "${{ matrix.package.name }}" = "catalogkit-lineage" ]; then
-            python -m build packages/catalogkit-core
-          fi
-
-      - name: Validate package metadata
-        run: python -m twine check ${{ matrix.package.path }}/dist/*
-
-      - name: Smoke test installed wheel
-        run: |
-          python -m venv .pkgtest
-          . .pkgtest/bin/activate
-          python -m pip install --upgrade pip
-          if [ "${{ matrix.package.name }}" = "catalogkit-core" ]; then
-            python -m pip install ${{ matrix.package.path }}/dist/*.whl
-            python -c "import catalogkit.core as core; print(core.__version__)"
-          elif [ "${{ matrix.package.name }}" = "catalogkit-lineage" ]; then
-            python -m pip install packages/catalogkit-core/dist/*.whl
-            python -m pip install ${{ matrix.package.path }}/dist/*.whl
-            catalogkit-lineage --dialect postgres packages/catalogkit-lineage/tests/fixtures/projects/jaffle_shop/manifest.json
-            catalogkit-lineage --dialect postgres --downstream orders_base.amount packages/catalogkit-lineage/tests/fixtures/projects/sql_folder
-            python -m catalogkit.lineage --dialect postgres packages/catalogkit-lineage/tests/fixtures/projects/jaffle_shop/manifest.json
-            python -c "import catalogkit.core; import catalogkit.lineage"
-          else
-            python -m pip install packages/catalogkit-core/dist/*.whl
-            python -m pip install ${{ matrix.package.path }}/dist/*.whl
-            catalogkit-query --dialect postgres packages/catalogkit-query/examples/ugly_real_world.sql
-            python -m catalogkit.query --dialect postgres packages/catalogkit-query/examples/simple.sql
-            python -c "import catalogkit.core; import catalogkit.query"
-          fi
-
-  repository-boundaries:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Install package dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e packages/catalogkit-core
-          python -m pip install -e "packages/catalogkit-query[dev]"
-          python -m pip install -e "packages/catalogkit-lineage[dev]"
+        run: python -m pytest -v packages/clearmetric-core/tests
 
       - name: Run repository boundary checks
-        run: python -m pytest -v tests/test_repository_boundaries.py
+        run: |
+          python -m pytest -v \
+            tests/test_repository_boundaries.py \
+            tests/test_cross_package_artifacts.py \
+            tests/test_module_independence.py
 
       - name: Lineage trust gate
         run: |
           python -m pytest -v \
-            packages/catalogkit-lineage/tests/test_corpus_invariants.py \
-            packages/catalogkit-lineage/tests/test_ground_truth.py \
-            packages/catalogkit-lineage/tests/test_value_lineage_oracle.py \
-            packages/catalogkit-lineage/tests/test_variant_warning_categories.py \
-            tests/test_cross_package_artifacts.py::test_lineage_and_query_artifacts_merge_on_shared_ids
-          PYTHONPATH=packages/catalogkit-lineage \
-            python packages/catalogkit-lineage/scripts/sweep_lineage_coverage.py
+            packages/clearmetric-core/tests/lineage/test_corpus_invariants.py \
+            packages/clearmetric-core/tests/lineage/test_ground_truth.py \
+            packages/clearmetric-core/tests/lineage/test_value_lineage_oracle.py \
+            packages/clearmetric-core/tests/lineage/test_variant_warning_categories.py
+          PYTHONPATH=packages/clearmetric-core \
+            python packages/clearmetric-core/scripts/sweep_lineage_coverage.py
 
-  meta-package:
+  release-smoke:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -152,27 +95,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install build twine
 
-      - name: Build package artifacts
-        run: |
-          python -m build packages/catalogkit-core
-          python -m build packages/catalogkit-query
-          python -m build packages/catalogkit-lineage
-          python -m build packages/catalogkit
+      - name: Build distribution artifacts
+        run: python -m build packages/clearmetric-core
 
       - name: Validate package metadata
-        run: |
-          python -m twine check packages/catalogkit-core/dist/*
-          python -m twine check packages/catalogkit-query/dist/*
-          python -m twine check packages/catalogkit-lineage/dist/*
-          python -m twine check packages/catalogkit/dist/*
+        run: python -m twine check packages/clearmetric-core/dist/*
 
-      - name: Smoke test namespace package install
+      - name: Smoke test installed wheel
         run: |
-          python -m venv .pkgmeta
-          . .pkgmeta/bin/activate
+          python -m venv .pkgsmoke
+          . .pkgsmoke/bin/activate
           python -m pip install --upgrade pip
-          python -m pip install packages/catalogkit-core/dist/*.whl
-          python -m pip install packages/catalogkit-query/dist/*.whl
-          python -m pip install packages/catalogkit-lineage/dist/*.whl
-          python -m pip install --no-deps packages/catalogkit/dist/*.whl
-          python -c "import catalogkit.core; import catalogkit.query; import catalogkit.lineage"
+          python -m pip install packages/clearmetric-core/dist/*.whl
+          cm --version
+          FIXTURE=packages/clearmetric-core/tests/fixtures/lineage/projects/jaffle_shop/manifest.json
+          cm compile "$FIXTURE" --dialect postgres > /dev/null
+          cm impact orders.amount "$FIXTURE" --dialect postgres --upstream
+          python -m clearmetric.cli --help
+          python -c "import clearmetric.core, clearmetric.lineage, clearmetric.query, clearmetric.powerbi"

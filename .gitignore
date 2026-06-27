@@ -4,7 +4,9 @@
 .pytest_cache/
 .ruff_cache/
 .venv/
+.venv-test/
 .pkgtest/
+.pkgtest-*/
 .pkgsmoke/
 .pkgmeta/
 __pycache__/

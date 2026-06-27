@@ -1,6 +1,6 @@
 # Security Policy
 
-`CatalogKit` is a local headless tooling monorepo. Its current OSS packages do
+`ClearMetric Core` is a local headless tooling monorepo. Its current OSS package does
 not ship authentication, RBAC, RLS, route handlers, or service-side runtime
 surfaces.
 

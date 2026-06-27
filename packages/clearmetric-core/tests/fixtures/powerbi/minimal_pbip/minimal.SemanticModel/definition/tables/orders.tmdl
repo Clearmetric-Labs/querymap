@@ -1,0 +1,10 @@
+table Orders
+
+    partition Orders = m
+        mode: import
+        source =
+            let
+                Source = Sql.Database("warehouse.company.net", "SalesMart"),
+                Query = Value.NativeQuery(Source, "SELECT OrderID FROM dbo.Orders")
+            in
+                Query

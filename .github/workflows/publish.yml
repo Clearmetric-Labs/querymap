@@ -3,21 +3,8 @@ name: publish
 on:
   push:
     tags:
-      - "catalogkit-core-v*"
-      - "catalogkit-query-v*"
-      - "catalogkit-lineage-v*"
-      - "catalogkit-v*"
+      - "clearmetric-core-v*"
   workflow_dispatch:
-    inputs:
-      package:
-        description: Package to publish
-        required: true
-        type: choice
-        options:
-          - catalogkit-core
-          - catalogkit-query
-          - catalogkit-lineage
-          - catalogkit
 
 permissions:
   contents: read
@@ -37,39 +24,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Resolve package path
-        id: package
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            PACKAGE="${{ inputs.package }}"
-          else
-            TAG="${GITHUB_REF_NAME}"
-            PACKAGE="${TAG%%-v*}"
-          fi
-
-          case "$PACKAGE" in
-            catalogkit-core)
-              echo "name=catalogkit-core" >> "$GITHUB_OUTPUT"
-              echo "path=packages/catalogkit-core" >> "$GITHUB_OUTPUT"
-              ;;
-            catalogkit-query)
-              echo "name=catalogkit-query" >> "$GITHUB_OUTPUT"
-              echo "path=packages/catalogkit-query" >> "$GITHUB_OUTPUT"
-              ;;
-            catalogkit-lineage)
-              echo "name=catalogkit-lineage" >> "$GITHUB_OUTPUT"
-              echo "path=packages/catalogkit-lineage" >> "$GITHUB_OUTPUT"
-              ;;
-            catalogkit)
-              echo "name=catalogkit" >> "$GITHUB_OUTPUT"
-              echo "path=packages/catalogkit" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "Unsupported package: $PACKAGE" >&2
-              exit 1
-              ;;
-          esac
-
       - name: Install release dependencies
         run: |
           python -m pip install --upgrade pip
@@ -82,7 +36,7 @@ jobs:
           from pathlib import Path
           import tomllib
 
-          package_path = Path("${{ steps.package.outputs.path }}")
+          package_path = Path("packages/clearmetric-core")
           pyproject = tomllib.loads(package_path.joinpath("pyproject.toml").read_text(encoding="utf-8"))
           project = pyproject["project"]
 
@@ -113,12 +67,12 @@ jobs:
           PY
 
       - name: Build distribution artifacts
-        run: python -m build ${{ steps.package.outputs.path }}
+        run: python -m build packages/clearmetric-core
 
       - name: Validate package metadata
-        run: python -m twine check ${{ steps.package.outputs.path }}/dist/*
+        run: python -m twine check packages/clearmetric-core/dist/*
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: ${{ steps.package.outputs.path }}/dist
+          packages-dir: packages/clearmetric-core/dist

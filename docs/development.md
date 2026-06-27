@@ -1,54 +1,50 @@
 # Development
 
-## Editable Installs
-
-Install the shared core first, then any tool package that depends on it:
+## Editable Install
 
 ```bash
-python -m pip install -e packages/catalogkit-core
-python -m pip install -e "packages/catalogkit-query[dev,release]"
-python -m pip install -e "packages/catalogkit-lineage[dev,release]"
+python -m pip install -e "packages/clearmetric-core[dev,release]"
 ```
-
-The `catalogkit` meta-package ships no Python package files. It exists only to
-install the current CatalogKit distributions together.
 
 ## Tests
 
 Run the full suite from the repository root:
 
 ```bash
-python -m pytest -v
+python -m pytest -v packages/clearmetric-core/tests tests/
 ```
 
-Run package-focused tests:
+Run repository boundary checks:
 
 ```bash
-python -m pytest -v packages/catalogkit-core/tests
-python -m pytest -v packages/catalogkit-query/tests
-python -m pytest -v packages/catalogkit-lineage/tests
 python -m pytest -v tests/test_repository_boundaries.py
+python -m pytest -v tests/test_cross_package_artifacts.py
+python -m pytest -v tests/test_module_independence.py
+```
+
+Lineage trust gate:
+
+```bash
+python -m pytest -v \
+  packages/clearmetric-core/tests/lineage/test_corpus_invariants.py \
+  packages/clearmetric-core/tests/lineage/test_ground_truth.py
+PYTHONPATH=packages/clearmetric-core \
+  python packages/clearmetric-core/scripts/sweep_lineage_coverage.py
 ```
 
 ## Builds
 
-Build packages independently:
-
 ```bash
-python -m build packages/catalogkit-core
-python -m build packages/catalogkit-query
-python -m build packages/catalogkit-lineage
-python -m build packages/catalogkit
+python -m build packages/clearmetric-core
+python -m twine check packages/clearmetric-core/dist/*
 ```
 
-Smoke test the namespace package install path with built wheels:
+Smoke test the installed wheel:
 
 ```bash
 python -m venv .pkgsmoke
 source .pkgsmoke/bin/activate
-python -m pip install packages/catalogkit-core/dist/*.whl
-python -m pip install packages/catalogkit-query/dist/*.whl
-python -m pip install packages/catalogkit-lineage/dist/*.whl
-python -m pip install --no-deps packages/catalogkit/dist/*.whl
-python -c "import catalogkit.core; import catalogkit.query; import catalogkit.lineage"
+python -m pip install packages/clearmetric-core/dist/*.whl
+cm --version
+python -c "import clearmetric.core; import clearmetric.lineage; import clearmetric.query; import clearmetric.powerbi"
 ```

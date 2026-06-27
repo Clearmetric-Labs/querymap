@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Renamed project to ClearMetric Core
+- Consolidated prior multi-package PyPI layout into `clearmetric-core`
+- CLI is `cm`; module entry is `python -m clearmetric.cli`
+
+## 0.2.0 - 2026-06-25
+
+> Package names in releases below predate the rename.
+
+### Added
+
+- **`catalogkit-powerbi` V1** — PBIP discovery, M source extraction (`pbi_parsers`), PBIR visual bindings, mergeable artifact emission
+- **`catalogkit-core` cross-graph interop** — FQN normalization, alias maps, `match_status` on edges, `visual`/`page`/`measure` node kinds, `load_table_alias_map()`, `warehouse_table_fqn_candidates_from_name()`
+- Rule 1 kill-test decision memo, V1 boundary doc, lineage contract validation, orchestration guide
+
+### Changed
+
+- `catalogkit-core` bumped to `0.2.0` for interop spine additions
+- Native SQL table extraction lives in `catalogkit-powerbi` (not core interop)
+- `merge_with_warehouse()` re-expands FQN candidates when resolving placeholder join edges
+- Contract doc defines warehouse join namespace, alias file format, and failure policy
+
 ## 0.1.9 - 2026-06-21
 
 ### Changed

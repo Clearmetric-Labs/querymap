@@ -1,0 +1,3 @@
+version: 1
+table_aliases:
+  salesmart.dbo.orders: orders

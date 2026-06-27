@@ -4,40 +4,45 @@ import ast
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-PACKAGES_ROOT = REPO_ROOT / "packages"
-PACKAGE_SOURCE_ROOTS = {
-    "catalogkit-core": PACKAGES_ROOT
-    / "catalogkit-core"
-    / "src"
-    / "catalogkit"
-    / "core",
-    "catalogkit-query": PACKAGES_ROOT
-    / "catalogkit-query"
-    / "src"
-    / "catalogkit"
-    / "query",
-    "catalogkit-lineage": PACKAGES_ROOT
-    / "catalogkit-lineage"
-    / "src"
-    / "catalogkit"
-    / "lineage",
+PACKAGE_ROOT = REPO_ROOT / "packages" / "clearmetric-core"
+SRC_ROOT = PACKAGE_ROOT / "src" / "clearmetric"
+MODULE_ROOTS = {
+    "core": SRC_ROOT / "core",
+    "query": SRC_ROOT / "query",
+    "lineage": SRC_ROOT / "lineage",
+    "powerbi": SRC_ROOT / "powerbi",
+    "cli": SRC_ROOT / "cli",
+}
+ALLOWED_MODULES_BY_SUBPACKAGE = {
+    "core": {"clearmetric.core"},
+    "query": {"clearmetric.core", "clearmetric.query"},
+    "lineage": {"clearmetric.core", "clearmetric.lineage"},
+    "powerbi": {"clearmetric.core", "clearmetric.powerbi"},
+    "cli": {
+        "clearmetric.core",
+        "clearmetric.cli",
+        "clearmetric.lineage",
+    },
 }
 SHARED_CLASS_NAMES = {"Node", "Edge", "Evidence", "Warning"}
-ALLOWED_MODULES_BY_PACKAGE = {
-    "catalogkit-core": {"catalogkit.core"},
-    "catalogkit-query": {"catalogkit.core", "catalogkit.query"},
-    "catalogkit-lineage": {"catalogkit.core", "catalogkit.lineage"},
-}
 PROPRIETARY_IMPORT_PREFIXES = (
     "apps",
     "auth",
-    "clearmetric",
+    "clearmetric_cloud",
     "config",
     "database",
     "models",
     "services",
     "shared_config",
 )
+CORE_ONLY_INTEROP_SYMBOLS = {
+    "apply_alias_map",
+    "normalize_fqn_for_matching",
+    "warehouse_table_fqn_candidates",
+    "warehouse_table_fqn_candidates_from_name",
+    "resolve_table_match",
+    "load_table_alias_map",
+}
 IGNORED_PATH_PARTS = {
     ".pkgmeta",
     ".pkgsmoke",
@@ -55,11 +60,11 @@ def _is_ignored_package_path(path: Path) -> bool:
     )
 
 
-def test_tool_packages_only_depend_on_catalogkit_core_and_themselves():
+def test_subpackages_only_import_allowed_clearmetric_modules():
     violations: list[str] = []
 
-    for package_name, package_root in PACKAGE_SOURCE_ROOTS.items():
-        allowed_modules = ALLOWED_MODULES_BY_PACKAGE[package_name]
+    for subpackage_name, package_root in MODULE_ROOTS.items():
+        allowed_modules = ALLOWED_MODULES_BY_SUBPACKAGE[subpackage_name]
 
         for path in package_root.rglob("*.py"):
             if _is_ignored_package_path(path):
@@ -69,28 +74,24 @@ def test_tool_packages_only_depend_on_catalogkit_core_and_themselves():
                 if isinstance(node, ast.Import):
                     for alias in node.names:
                         if alias.name.startswith(
-                            "catalogkit."
-                        ) and not _is_allowed_module(
-                            alias.name,
-                            allowed_modules,
-                        ):
+                            "clearmetric."
+                        ) and not _is_allowed_module(alias.name, allowed_modules):
                             violations.append(f"{path}: import {alias.name}")
                 elif (
                     isinstance(node, ast.ImportFrom) and node.module and node.level == 0
                 ):
-                    if node.module.startswith("catalogkit.") and not _is_allowed_module(
-                        node.module,
-                        allowed_modules,
-                    ):
+                    if node.module.startswith(
+                        "clearmetric."
+                    ) and not _is_allowed_module(node.module, allowed_modules):
                         violations.append(f"{path}: from {node.module} import ...")
 
     assert violations == []
 
 
-def test_tool_packages_do_not_import_enterprise_or_proprietary_prefixes():
+def test_subpackages_do_not_import_enterprise_or_proprietary_prefixes():
     violations: list[str] = []
 
-    for package_root in PACKAGE_SOURCE_ROOTS.values():
+    for package_root in MODULE_ROOTS.values():
         for path in package_root.rglob("*.py"):
             if _is_ignored_package_path(path):
                 continue
@@ -109,13 +110,11 @@ def test_tool_packages_do_not_import_enterprise_or_proprietary_prefixes():
     assert violations == []
 
 
-def test_shared_model_class_names_exist_only_in_catalogkit_core():
+def test_shared_model_class_names_exist_only_in_core():
     violations: list[str] = []
-    core_models_path = (
-        PACKAGES_ROOT / "catalogkit-core" / "src" / "catalogkit" / "core" / "models.py"
-    )
+    core_models_path = SRC_ROOT / "core" / "models.py"
 
-    for path in PACKAGES_ROOT.rglob("*.py"):
+    for path in SRC_ROOT.rglob("*.py"):
         if path == core_models_path or _is_ignored_package_path(path):
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -129,8 +128,41 @@ def test_shared_model_class_names_exist_only_in_catalogkit_core():
 def test_no_namespace_root_init_file_exists():
     violations = sorted(
         str(path.relative_to(REPO_ROOT))
-        for path in PACKAGES_ROOT.rglob("catalogkit/__init__.py")
+        for path in PACKAGE_ROOT.rglob("clearmetric/__init__.py")
     )
+    assert violations == []
+
+
+def test_cross_graph_interop_symbols_are_not_redefined_outside_core():
+    violations: list[str] = []
+    core_root = MODULE_ROOTS["core"]
+
+    for subpackage_name, package_root in MODULE_ROOTS.items():
+        if subpackage_name == "core":
+            continue
+        for path in package_root.rglob("*.py"):
+            if _is_ignored_package_path(path):
+                continue
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            for node in ast.walk(tree):
+                if (
+                    isinstance(node, ast.FunctionDef)
+                    and node.name in CORE_ONLY_INTEROP_SYMBOLS
+                ):
+                    violations.append(f"{path}: def {node.name}")
+
+    for path in core_root.rglob("*.py"):
+        if _is_ignored_package_path(path):
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.FunctionDef)
+                and node.name in CORE_ONLY_INTEROP_SYMBOLS
+            ):
+                if path.name not in {"interop.py", "aliases.py"}:
+                    violations.append(f"{path}: def {node.name}")
+
     assert violations == []
 
 

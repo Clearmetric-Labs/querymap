@@ -1,10 +1,10 @@
 # Contributing
 
-Thanks for contributing to `CatalogKit`.
+Thanks for contributing to ClearMetric Core.
 
 ## Contributor License Agreement
 
-CatalogKit uses a [Contributor License Agreement (CLA)](CLA.md) so ClearMetric can safely maintain, distribute, and evolve the project over time.
+ClearMetric Core uses a [Contributor License Agreement (CLA)](CLA.md) so ClearMetric can safely maintain, distribute, and evolve the project over time.
 
 By opening a pull request, you agree that your contribution is submitted under the [ClearMetric LLC Individual Contributor License Agreement](CLA.md). Pull requests may not be merged until the CLA check passes.
 
@@ -28,18 +28,13 @@ before the protected-files check will pass.
 
 ## Setup
 
-Create a virtual environment and install the packages you need in editable mode:
+Create a virtual environment and install the package in editable mode:
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e packages/catalogkit-core
-python -m pip install -e "packages/catalogkit-query[dev,release]"
-python -m pip install -e "packages/catalogkit-lineage[dev,release]"
+python -m pip install -e "packages/clearmetric-core[dev,release]"
 ```
-
-The `catalogkit` meta-package is dependency metadata only. Do not create a
-`catalogkit/__init__.py` file or any other namespace-root Python module.
 
 ## Run The Checks
 
@@ -50,6 +45,7 @@ python -m pip install ruff pyright
 python -m ruff check .
 python -m ruff format --check .
 pyright
+if rg -i 'catalogkit' --glob '!.git' --glob '!CHANGELOG.md' --glob '!CONTRIBUTING.md' --glob '!.github/workflows/ci.yml' .; then echo "legacy name references remain"; exit 1; fi
 ```
 
 Use Ruff to apply the repo's shared formatting and import-order rules:
@@ -62,55 +58,46 @@ python -m ruff format .
 Run the local test suite:
 
 ```bash
-pytest -v
+python -m pytest -v packages/clearmetric-core/tests tests/
 ```
 
 Lineage corpus invariants require the dev extra (PyYAML for ground-truth probes):
 
 ```bash
-python -m pip install -e "packages/catalogkit-lineage[dev]"
-python -m pytest -v packages/catalogkit-lineage/tests/test_corpus_invariants.py \
-  packages/catalogkit-lineage/tests/test_ground_truth.py
-PYTHONPATH=packages/catalogkit-lineage \
-  python packages/catalogkit-lineage/scripts/sweep_lineage_coverage.py
+python -m pytest -v \
+  packages/clearmetric-core/tests/lineage/test_corpus_invariants.py \
+  packages/clearmetric-core/tests/lineage/test_ground_truth.py
+PYTHONPATH=packages/clearmetric-core \
+  python packages/clearmetric-core/scripts/sweep_lineage_coverage.py
 ```
 
-Build and validate packages before release-facing changes:
+Build and validate the package before release-facing changes:
 
 ```bash
-python -m build packages/catalogkit-core
-python -m build packages/catalogkit-query
-python -m build packages/catalogkit-lineage
-python -m build packages/catalogkit
-python -m twine check packages/catalogkit-core/dist/*
-python -m twine check packages/catalogkit-query/dist/*
-python -m twine check packages/catalogkit-lineage/dist/*
-python -m twine check packages/catalogkit/dist/*
+python -m build packages/clearmetric-core
+python -m twine check packages/clearmetric-core/dist/*
 ```
 
 ## Release Workflow
+
+ClearMetric Core publishes as a **single PyPI package**: `clearmetric-core`. Tag and
+release once; all `clearmetric.*` modules move together.
 
 PyPI Trusted Publishing should point at `.github/workflows/publish.yml`.
 
 - workflow file: `publish.yml`
 - GitHub Actions environment: `pypi`
-- trigger: package tag push or manual `workflow_dispatch`
-- supported package names: `catalogkit-core`, `catalogkit-query`, `catalogkit-lineage`, and `catalogkit`
+- trigger: `clearmetric-core-v*` tag push or manual `workflow_dispatch`
 - package tag versions must match the package source version exactly
 
-Release order when publishing multiple packages:
+Publish by tagging:
 
-1. Publish `catalogkit-core`.
-2. Publish `catalogkit-query`.
-3. Publish `catalogkit-lineage`.
-4. Publish `catalogkit`.
+```bash
+git tag clearmetric-core-v0.2.0
+git push origin clearmetric-core-v0.2.0
+```
 
-All four packages use **lockstep versioning**: every release bumps every package to the
-same version, publishes every package tag, and keeps the meta-package dependency pins
-aligned at that version (for example `catalogkit-core>=0.1.9`,
-`catalogkit-query>=0.1.9`, `catalogkit-lineage>=0.1.9` for release `0.1.9`).
-
-While CatalogKit is in 0.x:
+While ClearMetric Core is in 0.x:
 
 - breaking changes bump the package minor version, for example `0.1.0` to
   `0.2.0`
@@ -128,7 +115,7 @@ While CatalogKit is in 0.x:
 - Fail loudly on unsupported input rather than returning partial or ambiguous output.
 - Keep docs, tests, and code aligned in the same change.
 - Add tests only where they materially protect the public contract or release path.
-- Keep shared contract logic in `catalogkit-core`; do not recreate ID or merge rules in tool packages.
+- Keep shared contract logic in `clearmetric.core`; do not recreate ID or merge rules in tool modules.
 
 ## Scope Guardrails
 
@@ -140,9 +127,11 @@ This OSS monorepo is intentionally limited. Do not add:
 - route handlers or API wiring
 - warehouse-connected enrichment paths
 
+New modules must follow [docs/modules_instruction.md](docs/modules_instruction.md).
+
 ## Pull Requests
 
 Keep pull requests small, direct, and honest about scope. If a change expands the
 public contract, update `README.md`,
-`packages/catalogkit-core/docs/contract.md`, and the relevant tests in the same
+`packages/clearmetric-core/docs/contract.md`, and the relevant tests in the same
 pull request.
