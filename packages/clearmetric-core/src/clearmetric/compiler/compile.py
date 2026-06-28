@@ -5,19 +5,18 @@ from __future__ import annotations
 from pathlib import Path
 
 from clearmetric.adapters.registry import enabled_sources, ingest_all
-from clearmetric.adapters.warehouse import compare_warehouse_metadata
-from clearmetric.cleaner import enforce_structural_checks
-from clearmetric.core import merge
-from clearmetric.core.project import load_project_config
-from clearmetric.policy import load_rules, validate_security_floor
+from clearmetric.core import attach_warehouse_bindings, merge
+from clearmetric.core.project import load_project_aliases, load_project_config
 
 from .models import CompiledGraph
+from .validate import enforce_graph
 
 
-def compile(project_dir: Path) -> CompiledGraph:
+def build_graph(project_dir: Path) -> CompiledGraph:
+    """Ingest, merge, and bind warehouse metadata without enforcing checks."""
     root = project_dir.expanduser().resolve()
     project = load_project_config(root)
-    load_rules(Path(project.policy.rules))
+    alias_map = load_project_aliases(project)
 
     ingested = ingest_all(project)
     artifacts = [artifact for _kind, artifact in ingested]
@@ -28,15 +27,22 @@ def compile(project_dir: Path) -> CompiledGraph:
         None,
     )
     if warehouse_artifact is not None:
-        drift = compare_warehouse_metadata(merged, warehouse_artifact)
-        if drift:
-            merged = merged.model_copy(update={"warnings": [*merged.warnings, *drift]})
+        merged = attach_warehouse_bindings(
+            merged=merged,
+            warehouse_artifact=warehouse_artifact,
+            alias_map=alias_map,
+        )
 
-    enforce_structural_checks(merged)
-    validate_security_floor(merged)
     return CompiledGraph(
         artifact=merged,
         project=project,
         project_dir=root,
         sources_run=enabled_sources(project),
     )
+
+
+def compile(project_dir: Path) -> CompiledGraph:
+    """Build and enforce a valid compiled graph."""
+    compiled = build_graph(project_dir)
+    enforce_graph(compiled.artifact, posture=compiled.project.posture)
+    return compiled

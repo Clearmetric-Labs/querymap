@@ -21,6 +21,7 @@ def impact(
     selection: str,
     direction: TraversalDirection,
 ) -> tuple[CompiledGraph, TraversalResult]:
+    # compile (not build_graph): impact requires an enforced-valid graph for traversal.
     compiled = compile(project_dir)
     if direction == "upstream":
         result = trace_upstream_from_artifact(compiled.artifact, selection=selection)

@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+## 0.4.0 - 2026-06-27
+
+### Added
+
+- **`compile --format catalog`** — catalog projection (`table`, `column`, `model` nodes only) via `project_catalog_assets` and `emitters/catalog`
+- **`core.interop.attach_warehouse_bindings`** — warehouse physical bindings on lineage nodes; `warehouse_bind_unresolved` / `warehouse_bind_ambiguous` warnings
+- **Posture-aware cleaner** — `run_compile_checks` / `enforce_checks` with `resolve_severity`; duplicate-binding and partial-derivation checks
+- **Compiler validation split** — `build_graph`, `check_graph`, `enforce_graph`; `cm clean` exits 1 on errors only (warnings never fail exit)
+- **Optional `aliases` path** in `clearmetric.yaml`; policy rules validated at config load
+
+### Changed
+
+- v1 warehouse path is **INFORMATION_SCHEMA metadata exports only** — no live Snowflake connector stub
+- Removed `compare_warehouse_metadata`, `enforce_structural_checks`, `cm connect snowflake`
+- Policy YAML failures raise `ProjectConfigError` at config load with path-qualified messages
+
+### Notes
+
+- v1 promise: *Turns dbt or SQL plus warehouse metadata exports into one graph for lineage, impact, schema drift findings, and catalog output.*
+- Approved phrasing: *Warehouse-aware lineage using INFORMATION_SCHEMA metadata exports* / *Connect warehouse metadata, dbt, and SQL into one lineage graph.*
+
 ## 0.3.0 - 2026-06-27
 
 ### Added
@@ -29,8 +50,7 @@ All notable changes to this project will be documented in this file.
 
 ### Notes
 
-- Snowflake live metadata (`connect snowflake`) is config-only in v0 — raises `AdapterError` until optional connector support lands
-- Power BI remains a shipped module but is not in the v0 warehouse CLI source registry
+- Power BI remains a shipped module but is not in the warehouse CLI source registry (historical 0.3.0 release note)
 - `serve`, live query execution, metrics YAML, and full RBAC rule kinds are deferred
 
 ## 0.2.0 - 2026-06-25

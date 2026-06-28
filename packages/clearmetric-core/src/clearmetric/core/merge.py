@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .errors import MergeConflictError
+from .interop import physical_binding_key
 from .models import (
     CatalogArtifact,
     DerivationState,
@@ -247,25 +248,15 @@ def _merge_derivation(
     return left
 
 
-def _binding_key(binding: PhysicalBinding) -> tuple[str, ...]:
-    return (
-        binding.warehouse,
-        binding.database or "",
-        binding.schema_name or "",
-        binding.table or "",
-        binding.column or "",
-    )
-
-
 def _merge_bindings(
     left: list[PhysicalBinding] | None,
     right: list[PhysicalBinding] | None,
     node_id: str,
     warnings: list[Warning],
 ) -> list[PhysicalBinding] | None:
-    merged: dict[tuple[str, ...], PhysicalBinding] = {}
+    merged: dict[tuple[str, str, str, str, str], PhysicalBinding] = {}
     for binding in [*(left or []), *(right or [])]:
-        key = _binding_key(binding)
+        key = physical_binding_key(binding)
         existing = merged.get(key)
         if existing is not None and existing != binding:
             warnings.append(

@@ -36,7 +36,9 @@ Column selections are normalized via `clearmetric.core.ids.parse_column_selectio
 See core contract for warehouse namespace, alias map, and `match_status` rules.
 Lineage emits warehouse `table:` IDs from dbt model names (e.g. `table:orders`).
 
-Power BI remains a shipped module but is **not** part of the v0 warehouse-connected CLI source registry.
+Power BI remains a shipped module but is **not** part of the warehouse CLI source registry.
+
+Wedge CLI also supports `compile --format catalog`, `clean`, and `contract` — see [`docs/v1-boundary.md`](v1-boundary.md).
 
 ## Enterprise Drift (integration lag, not OSS gaps)
 

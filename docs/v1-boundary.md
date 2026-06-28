@@ -1,8 +1,57 @@
-# ClearMetric Core Power BI V1 Boundary
+# ClearMetric Core Boundaries
+
+Scope guardrails for what is shipped in open source vs deferred. This file covers **both**
+the warehouse wedge CLI and the Power BI module.
+
+## Warehouse wedge (v1 — shipped CLI)
+
+Warehouse-aware lineage using INFORMATION_SCHEMA **metadata exports** only. No live warehouse
+connector, query execution, or credential-based ingestion in v1.
+
+### In scope
+
+| Capability | Module | Notes |
+|---|---|---|
+| Project config | `clearmetric.core.project` | `clearmetric.yaml`, posture, policy path, optional aliases |
+| Source ingestion | `clearmetric.adapters` | `information_schema` JSON, dbt manifest, SQL folders |
+| Build + bind | `clearmetric.compiler` | ingest → merge → `attach_warehouse_bindings` |
+| Validation | `clearmetric.compiler.validate` | `check_graph`, `enforce_graph` |
+| Checks | `clearmetric.cleaner` | Structural checks + merge/drift warnings via posture |
+| Security floor | `clearmetric.policy` | Enforced at compile/contract; not a full policy compiler |
+| Catalog slice | `clearmetric.projection` + emitters | `compile --format catalog` (table/column/model only) |
+| CLI | `clearmetric.cli` | `init`, `connect warehouse`, `scan`, `compile`, `impact`, `clean`, `contract` |
+
+### Out of scope (v1 wedge)
+
+- Live Snowflake or other warehouse connectors
+- `serve`, query endpoint, metrics/query YAML compiler
+- `cm catalog` as a separate command (use `compile --format catalog`)
+- User-defined cleaner checks and graph query API
+- Policy compiler to warehouse RLS / OPA
+- Full RBAC completeness checks (owner/classification required on every node)
+
+### Success criteria
+
+```bash
+cm init
+cm connect warehouse --information-schema ./warehouse_schema.json
+cm scan
+cm compile --format json > graph.json
+cm compile --format catalog > catalog.json
+cm impact orders.amount --upstream
+cm clean          # exit 1 on errors only; warnings never fail exit
+cm contract graph.json
+```
+
+See [`examples/wedge-jaffle/README.md`](../examples/wedge-jaffle/README.md).
+
+---
+
+## Power BI module (V1 — Python API, not CLI registry)
 
 Foundational, open-source-worthy scope only. Anything not listed here is deferred.
 
-## In V1
+### In scope
 
 | Capability | Module | Notes |
 |---|---|---|
@@ -16,37 +65,30 @@ Foundational, open-source-worthy scope only. Anything not listed here is deferre
 | Artifact merge | `clearmetric.core` | Warehouse + BI graphs merge by canonical ID |
 | Lineage composition | orchestration | `clearmetric.lineage` artifact + `clearmetric.powerbi` artifact → `merge()` |
 
-## Out of V1
+### Out of scope (Power BI V1)
 
 - Deep DAX measure → column lineage
 - Full TMDL semantic model parser
 - Live Power BI / Fabric Scanner API or service-principal sync
 - Enterprise adapters (`PowerBIMapAdapter`, etc.)
-- Auth, RLS, RBAC, policy, or governance
+- Auth, RLS, RBAC, or full governance rule compiler
 - Semantic execution or business-definition projection
 - Frontend / UI
 - Cross-module imports (`clearmetric.powerbi` must not import `clearmetric.query`)
 
-## Error Policy
+### Error policy
 
 1. **Structural failure → loud error.** Missing PBIP root, corrupt JSON, unprocessable folder layout.
 2. **Semantic gap → warning + continue.** Unresolved warehouse↔BI join, ambiguous alias, unsupported connector — emit explicit state in artifact; do not fail the whole walk.
 
-## Success Criteria
+Power BI composition with the warehouse wedge is optional via Python merge (not part of the
+warehouse CLI source registry):
 
-A developer can run the warehouse wedge:
-
-```bash
-cm init
-cm connect warehouse --information-schema ./warehouse_schema.json
-cm compile --format json > graph.json
+```python
+from clearmetric.core import merge
+from clearmetric.powerbi import build_catalog_artifact, merge_with_warehouse
+# merge in Python via clearmetric.core.merge() / merge_with_warehouse()
 ```
 
-Power BI composition remains optional via Python merge (not part of the v0 CLI source registry):
-
-```bash
-python -c "from clearmetric.powerbi import build_catalog_artifact; ..."
-# merge in Python via clearmetric.core.merge()
-```
-
-…and get one graph where warehouse columns connect to PBI tables and visuals, with honest `match_status` on every cross-graph edge.
+…producing one graph where warehouse columns connect to PBI tables and visuals, with honest
+`match_status` on every cross-graph edge.

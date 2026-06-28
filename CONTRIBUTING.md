@@ -125,7 +125,7 @@ This OSS monorepo is intentionally limited. Do not add:
 - proprietary comparison logic
 - auth, RBAC, or RLS behavior
 - route handlers or API wiring
-- warehouse-connected enrichment paths
+- live warehouse connectors, query execution, or credential-based metadata sync (v1 uses local INFORMATION_SCHEMA JSON exports)
 
 New modules must follow [docs/modules_instruction.md](docs/modules_instruction.md).
 

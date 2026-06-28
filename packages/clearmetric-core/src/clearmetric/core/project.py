@@ -6,14 +6,17 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError, model_validator
+from clearmetric.policy.load import load_rules
+from pydantic import BaseModel, Field, ValidationError
 
-from .errors import ProjectConfigError
+from .aliases import load_table_alias_map
+from .errors import PolicyError, ProjectConfigError
 from .errors import ValidationError as ArtifactValidationError
+from .interop import AliasMap
 from .validate import validate_project_dict
 
 Posture = Literal["strict", "standard", "permissive"]
-WarehouseKind = Literal["information_schema", "snowflake"]
+WarehouseKind = Literal["information_schema"]
 
 _RUNTIME_WAREHOUSE_KEYS = frozenset(
     {"execute", "query", "runtime", "connection_string"}
@@ -22,22 +25,9 @@ _RUNTIME_WAREHOUSE_KEYS = frozenset(
 
 class WarehouseSource(BaseModel):
     kind: WarehouseKind
-    path: str | None = None
-    profile: str | None = None
+    path: str
     database: str | None = None
     schema_name: str | None = Field(default=None, alias="schema")
-
-    @model_validator(mode="after")
-    def _validate_kind_fields(self) -> WarehouseSource:
-        if self.kind == "information_schema":
-            if not self.path:
-                raise ValueError(
-                    "sources.warehouse.kind information_schema requires path"
-                )
-        elif self.kind == "snowflake":
-            if not self.profile:
-                raise ValueError("sources.warehouse.kind snowflake requires profile")
-        return self
 
 
 class DbtSource(BaseModel):
@@ -64,6 +54,7 @@ class ClearMetricProject(BaseModel):
     sources: ProjectSources
     posture: Posture
     policy: PolicyConfig
+    aliases: str | None = None
 
 
 def load_project_config(project_dir: Path) -> ClearMetricProject:
@@ -106,7 +97,7 @@ def _reject_runtime_warehouse_keys(raw: dict) -> None:
     runtime_keys = sorted(key for key in warehouse if key in _RUNTIME_WAREHOUSE_KEYS)
     if runtime_keys:
         raise ProjectConfigError(
-            "Warehouse runtime/query execution config is not supported in v0: "
+            "Warehouse runtime/query execution config is not supported in v1: "
             + ", ".join(runtime_keys)
         )
 
@@ -117,10 +108,8 @@ def _resolve_project_paths(root: Path, project: ClearMetricProject) -> None:
 
     if sources.warehouse is not None:
         has_source = True
-        if sources.warehouse.kind == "information_schema":
-            assert sources.warehouse.path is not None
-            resolved = _resolve_path(root, sources.warehouse.path)
-            sources.warehouse.path = str(resolved)
+        resolved = _resolve_path(root, sources.warehouse.path)
+        sources.warehouse.path = str(resolved)
 
     if sources.dbt is not None and sources.dbt.manifest:
         has_source = True
@@ -143,6 +132,25 @@ def _resolve_project_paths(root: Path, project: ClearMetricProject) -> None:
     if not rules_path.is_file():
         raise ProjectConfigError(f"Policy rules file not found: {rules_path}")
     project.policy.rules = str(rules_path)
+    try:
+        load_rules(rules_path)
+    except PolicyError as exc:
+        raise ProjectConfigError(
+            f"Policy rules failed validation: {rules_path}: {exc}"
+        ) from exc
+
+    if project.aliases is not None:
+        resolved_aliases = _resolve_path(root, project.aliases)
+        if not resolved_aliases.is_file():
+            raise ProjectConfigError(f"Aliases file not found: {resolved_aliases}")
+        project.aliases = str(resolved_aliases)
+
+
+def load_project_aliases(project: ClearMetricProject) -> AliasMap | None:
+    """Load optional project alias map."""
+    if project.aliases is None:
+        return None
+    return load_table_alias_map(project.aliases)
 
 
 def _resolve_path(root: Path, relative: str) -> Path:

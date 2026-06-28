@@ -46,8 +46,14 @@ project.
 cm init
 cm connect warehouse --information-schema ./warehouse_schema.json
 cm scan          # point at warehouse and/or dbt and/or a SQL folder
+cm compile --format json > graph.json
+cm compile --format catalog > catalog.json
 cm impact column.fct_orders.net_revenue --upstream   # the wedge: what breaks?
+cm clean
+cm contract graph.json
 ```
+
+Warehouse metadata is a **local INFORMATION_SCHEMA JSON export** in v1 — not a live connector.
 
 Shipped CLI entry point is `cm` (`python -m clearmetric.cli` if `cm` is occupied on PATH).
 
@@ -611,19 +617,28 @@ Output:  compiled graph JSON · impact CLI · query endpoint ·
          minimal catalog JSON · frontend contract JSON · cleaner report
 ```
 
-### First demo (v0 shipped subset)
+### First demo (v1 shipped wedge)
 
 ```bash
 cm init
 cm connect warehouse --information-schema ./warehouse_schema.json
 cm scan
 cm compile --format json > graph.json
+cm compile --format catalog > catalog.json
 cm clean
 cm impact column.fct_orders.net_revenue --upstream
 cm contract graph.json
 ```
 
-Deferred from v0 demo: `serve`, `query`, full user-defined cleaner checks, live Snowflake metadata.
+**Shipped in v1 wedge:** metadata-export warehouse adapter, dbt/SQL ingestion, physical
+bindings on lineage nodes, posture-aware cleaner, security floor, catalog projection via
+`compile --format catalog`, impact traversal on enforced graphs.
+
+**Deferred from v1 wedge:** `serve`, live query endpoint, YAML metrics & queries, full
+user-defined cleaner checks, live warehouse connectors (v1 uses INFORMATION_SCHEMA JSON
+exports only; no `cm connect snowflake` or query execution).
+
+See [`docs/v1-boundary.md`](docs/v1-boundary.md) for the full shipped vs deferred list.
 
 ### Explicitly NOT in the MVP (keep attachment placeholders)
 ```
@@ -734,6 +749,10 @@ Crucially, jobs 1 and 2 are **read-only metadata/validation** and cheap; job 3 (
 execution) is the expensive runtime. The core treats all three as adapter/emitter
 capabilities, not core logic — so "warehouse-connected" is an identity of the *product*
 delivered through the *edges*, while the core stays source-agnostic.
+
+**v1 wedge honesty:** the shipped warehouse adapter implements job 1 via local
+INFORMATION_SCHEMA JSON exports only. Jobs 2 (live validation) and 3 (runtime query
+execution) are deferred. Do not document or implement live connector paths in the wedge CLI.
 
 ### Deployment is the same principle, applied to runtime
 

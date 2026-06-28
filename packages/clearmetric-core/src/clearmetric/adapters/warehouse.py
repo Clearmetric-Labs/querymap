@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from clearmetric.core import CatalogArtifact, Evidence, Node, PhysicalBinding, Warning
+from clearmetric.core import CatalogArtifact, Evidence, Node, PhysicalBinding
 from clearmetric.core.errors import AdapterError
 from clearmetric.core.ids import column_id, table_id
 from clearmetric.core.models import DerivationState
@@ -37,14 +37,7 @@ def ingest_warehouse(project: ClearMetricProject) -> CatalogArtifact:
     source = project.sources.warehouse
     if source is None:
         raise AdapterError("warehouse source is not configured")
-    if source.kind == "information_schema":
-        return _ingest_information_schema(source, warehouse_name="information_schema")
-    if source.kind == "snowflake":
-        raise AdapterError(
-            "snowflake warehouse metadata requires optional snowflake-connector-python; "
-            "use kind: information_schema for credential-free metadata in v0"
-        )
-    raise AdapterError(f"unsupported warehouse kind: {source.kind}")
+    return _ingest_information_schema(source, warehouse_name="information_schema")
 
 
 def _ingest_information_schema(
@@ -52,7 +45,6 @@ def _ingest_information_schema(
     *,
     warehouse_name: str,
 ) -> CatalogArtifact:
-    assert source.path is not None
     path = Path(source.path)
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -139,31 +131,6 @@ def _ingest_information_schema(
             )
 
     return CatalogArtifact(nodes=nodes, edges=[], warnings=[])
-
-
-def compare_warehouse_metadata(
-    artifact: CatalogArtifact,
-    warehouse_artifact: CatalogArtifact,
-) -> list[Warning]:
-    """Emit schema drift findings when dbt/sql nodes lack warehouse metadata."""
-    warehouse_ids = {node.id for node in warehouse_artifact.nodes}
-    findings: list[Warning] = []
-    for node in artifact.nodes:
-        if node.kind not in {"table", "column"}:
-            continue
-        if node.id in warehouse_ids:
-            continue
-        findings.append(
-            Warning(
-                code="schema_drift",
-                message=(
-                    f"{node.id} is present in project sources but missing from "
-                    "warehouse metadata"
-                ),
-                subject_id=node.id,
-            )
-        )
-    return findings
 
 
 def _table_qualified_name(table: WarehouseMetadataTable) -> str:

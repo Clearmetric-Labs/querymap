@@ -20,3 +20,12 @@ def test_emit_compile_json(tmp_path: Path):
     payload = json.loads(emit_compile("json", compiled))
     assert payload["version"] == "1"
     assert payload["nodes"]
+
+
+def test_emit_compile_catalog_excludes_non_assets(tmp_path: Path):
+    compiled = compile_project(setup_wedge_project(tmp_path))
+    payload = json.loads(emit_compile("catalog", compiled))
+    kinds = {node["kind"] for node in payload["nodes"]}
+    assert kinds.issubset({"table", "column", "model"})
+    assert "report" not in kinds
+    assert "visual" not in kinds

@@ -39,6 +39,7 @@ from .ids import (
 from .interop import (
     AliasMap,
     apply_alias_map,
+    attach_warehouse_bindings,
     normalize_fqn_for_matching,
     resolve_table_match,
     warehouse_table_fqn_candidates,
@@ -55,7 +56,7 @@ from .models import (
     PhysicalBinding,
     Warning,
 )
-from .project import ClearMetricProject, load_project_config
+from .project import ClearMetricProject, load_project_aliases, load_project_config
 from .serialize import render_json
 from .validate import load_artifact_file, validate_artifact_dict, validate_project_dict
 
@@ -81,6 +82,7 @@ __all__ = [
     "StructuralCheckError",
     "ValidationError",
     "apply_alias_map",
+    "attach_warehouse_bindings",
     "asset_id",
     "column_id",
     "cte_id",
@@ -88,6 +90,7 @@ __all__ = [
     "Evidence",
     "leaf_name",
     "load_artifact_file",
+    "load_project_aliases",
     "load_project_config",
     "load_table_alias_map",
     "measure_id",

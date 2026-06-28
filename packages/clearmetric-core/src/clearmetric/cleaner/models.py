@@ -15,6 +15,7 @@ class Finding(BaseModel):
     severity: Severity
     message: str
     fix_hint: str | None = None
+    tier: str | None = None
 
 
 class CleanerReport(BaseModel):

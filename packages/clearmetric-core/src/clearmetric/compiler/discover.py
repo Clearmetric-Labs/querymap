@@ -13,20 +13,14 @@ def discover(project_dir: Path) -> DiscoverReport:
     project = load_project_config(project_dir)
     sources: list[ResolvedSource] = []
     if project.sources.warehouse is not None:
-        if project.sources.warehouse.kind == "information_schema":
-            sources.append(
-                ResolvedSource(
-                    kind="warehouse",
-                    path=project.sources.warehouse.path,
-                )
+        sources.append(
+            ResolvedSource(
+                kind="warehouse",
+                path=project.sources.warehouse.path,
             )
-        else:
-            sources.append(
-                ResolvedSource(
-                    kind="warehouse",
-                    path=project.sources.warehouse.profile,
-                )
-            )
+        )
+    if project.aliases is not None:
+        sources.append(ResolvedSource(kind="aliases", path=project.aliases))
     if project.sources.dbt is not None and project.sources.dbt.manifest:
         sources.append(ResolvedSource(kind="dbt", path=project.sources.dbt.manifest))
     if project.sources.sql is not None:

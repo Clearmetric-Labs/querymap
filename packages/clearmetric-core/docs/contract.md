@@ -178,6 +178,8 @@ are matched against that namespace via candidate expansion and optional aliases.
 - `warehouse_table_fqn_candidates_from_name()` — rebuild candidates from a normalized dotted name
 - `apply_alias_map()` — resolve user-supplied aliases
 - `resolve_table_match()` — match source candidates to `table:` node IDs with status
+- `physical_binding_key()` — hashable key for duplicate-binding detection
+- `attach_warehouse_bindings()` — copy warehouse `PhysicalBinding` onto lineage nodes after merge; emit `warehouse_bind_unresolved` / `warehouse_bind_ambiguous` warnings; never invent bindings
 - `load_table_alias_map()` — load a versioned alias file into `AliasMap`
 
 ### Match status
@@ -208,6 +210,37 @@ Load with `load_table_alias_map(path)`. Invalid files fail with `AliasMapError`.
 
 Parser-local alias resolution inside a module (e.g. PBIR source refs) is extraction
 detail only and is not the cross-graph alias contract.
+
+## Project configuration
+
+Wedge projects use `clearmetric.yaml` (validated against `spec/clearmetric-project.schema.json`).
+
+Required fields: `version`, `dialect`, `sources`, `posture`, `policy.rules`.
+
+Optional: `aliases` — path to a version-1 alias YAML file (same format as cross-graph aliases).
+
+Warehouse source (v1): `sources.warehouse.kind` must be `information_schema` with a local
+JSON metadata export path. Runtime connection config is rejected at load time.
+
+Policy rules are validated when the project config loads (`ProjectConfigError` on invalid YAML).
+
+Posture (`strict` | `standard` | `permissive`) controls check severity via the cleaner;
+structural checks and the security floor always apply on enforce paths.
+
+## Compiler validation
+
+| Function | Behavior |
+|---|---|
+| `build_graph()` | ingest → merge → `attach_warehouse_bindings` (no enforce) |
+| `check_graph()` | `run_compile_checks` — report findings only |
+| `enforce_graph()` | `enforce_checks` + `validate_security_floor` |
+| `compile()` | `build_graph` + `enforce_graph` |
+| `clean()` | `build_graph` + `check_graph` |
+
+`cm clean` exits non-zero on `severity == error` only; warnings never fail exit regardless of posture.
+
+Catalog output uses `project_catalog_assets()` (table/column/model nodes, pruned edges) via
+`compile --format catalog` only — not a separate CLI command.
 
 ## Failure Policy
 

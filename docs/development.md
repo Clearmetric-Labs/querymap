@@ -54,6 +54,7 @@ pyright
 cd examples/wedge-jaffle
 cm scan
 cm compile --format json > graph.json
+cm compile --format catalog > catalog.json
 cm impact orders.amount --upstream
 cm clean
 cm contract graph.json

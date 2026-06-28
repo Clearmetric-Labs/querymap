@@ -1,6 +1,8 @@
 # clearmetric-core
 
-One PyPI package. All ClearMetric Core modules ship inside this distribution.
+One PyPI package. Column-level lineage and impact from SQL/dbt + warehouse metadata exports.
+
+See the repo [`README.md`](../../README.md) and [`clearmetric-architecture.md`](../../clearmetric-architecture.md) for positioning. Warehouse metadata is a local INFORMATION_SCHEMA JSON export — not a live connector.
 
 ## Install
 
@@ -8,59 +10,48 @@ One PyPI package. All ClearMetric Core modules ship inside this distribution.
 python -m pip install clearmetric-core
 ```
 
-## CLI (project-first)
+## CLI (v1 wedge)
 
 ```bash
 cm init
 cm connect warehouse --information-schema ./warehouse_schema.json
 cm scan
 cm compile --format json > graph.json
-cm impact orders.amount --upstream
+cm compile --format catalog > catalog.json
+cm impact column.fct_orders.net_revenue --upstream
 cm clean
 cm contract graph.json
 ```
 
-If `cm` is occupied on your PATH:
-
-```bash
-python -m clearmetric.cli --project-dir . compile --format json
-```
+If `cm` is occupied: `python -m clearmetric.cli --project-dir . compile --format json`
 
 ## Modules
 
 | Module | Purpose |
 |--------|---------|
-| `clearmetric.compiler` | Discover → adapters → merge → policy/cleaner spine |
-| `clearmetric.core` | Artifact schema, canonical IDs, merge, validation |
-| `clearmetric.lineage` | Project-level SQL lineage from dbt manifests and SQL folders |
-| `clearmetric.query` | Single-statement SQL structure mapping |
-| `clearmetric.powerbi` | PBIP file lineage (not in v0 warehouse CLI registry) |
-| `clearmetric.cli` | `cm` command router |
+| `clearmetric.lineage` | Column lineage (**Module B — wedge**) |
+| `clearmetric.compiler` | Build, validate, impact orchestration |
+| `clearmetric.adapters` | Warehouse JSON, dbt, SQL ingestion |
+| `clearmetric.core` | Artifact, IDs, merge, bindings interop |
+| `clearmetric.cleaner` / `clearmetric.policy` / `clearmetric.projection` / `clearmetric.emitters` | Checks, floor, catalog slice, output |
+| `clearmetric.query` | Single-statement SQL (**Module A — library only**) |
+| `clearmetric.powerbi` | PBIP lineage (not in CLI registry) |
 
 ## Imports
 
 ```python
 from pathlib import Path
-from clearmetric.compiler import compile
-from clearmetric.core import CatalogArtifact, merge, parse_column_selection
-from clearmetric.lineage import (
-    build_catalog_artifact_from_project,
-    load_project,
-    trace_upstream_from_project,
-)
+from clearmetric.compiler import build_graph, check_graph, compile
+from clearmetric.core import attach_warehouse_bindings, merge, parse_column_selection
 ```
 
-For local development:
+## Contract & example
+
+- [`docs/contract.md`](docs/contract.md)
+- [`../../spec/clearmetric-project.schema.json`](../../spec/clearmetric-project.schema.json)
+- [`../../examples/wedge-jaffle`](../../examples/wedge-jaffle)
+- [`../../docs/v1-boundary.md`](../../docs/v1-boundary.md)
 
 ```bash
 python -m pip install -e ".[dev,release]"
 ```
-
-## Contract
-
-The source of truth for the shared artifact contract is
-[`docs/contract.md`](docs/contract.md).
-
-Project config schema: [`../../spec/clearmetric-project.schema.json`](../../spec/clearmetric-project.schema.json)
-
-Example project: [`../../examples/wedge-jaffle`](../../examples/wedge-jaffle)

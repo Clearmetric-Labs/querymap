@@ -20,12 +20,17 @@ MODULE_ROOTS = {
     "cli": SRC_ROOT / "cli",
 }
 ALLOWED_MODULES_BY_SUBPACKAGE = {
-    "core": {"clearmetric.core"},
+    "core": {"clearmetric.core", "clearmetric.policy"},
     "query": {"clearmetric.core", "clearmetric.query"},
     "lineage": {"clearmetric.core", "clearmetric.lineage"},
     "powerbi": {"clearmetric.core", "clearmetric.powerbi"},
     "adapters": {"clearmetric.core", "clearmetric.lineage"},
-    "emitters": {"clearmetric.core", "clearmetric.lineage", "clearmetric.compiler"},
+    "emitters": {
+        "clearmetric.core",
+        "clearmetric.lineage",
+        "clearmetric.compiler",
+        "clearmetric.projection",
+    },
     "cleaner": {"clearmetric.core"},
     "policy": {"clearmetric.core"},
     "projection": {"clearmetric.core", "clearmetric.policy"},

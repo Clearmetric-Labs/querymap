@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from clearmetric.cleaner import run_compile_checks
 from clearmetric.cleaner.models import CleanerReport
 
-from .compile import compile
+from .compile import build_graph
 from .models import CompiledGraph
+from .validate import check_graph
 
 
 def clean(project_dir: Path) -> tuple[CleanerReport, CompiledGraph]:
-    compiled = compile(project_dir)
-    report = run_compile_checks(compiled.artifact)
+    # build_graph (not compile): clean must report warnings without enforce failing first.
+    compiled = build_graph(project_dir)
+    report = check_graph(compiled.artifact, posture=compiled.project.posture)
     return report, compiled

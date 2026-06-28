@@ -8,11 +8,11 @@ import sys
 from pathlib import Path
 
 import yaml
-from clearmetric.cleaner import enforce_structural_checks
 from clearmetric.compiler import clean as run_clean
 from clearmetric.compiler import compile as run_compile
 from clearmetric.compiler import discover
 from clearmetric.compiler import impact as run_impact
+from clearmetric.compiler.validate import enforce_graph
 from clearmetric.core import ClearMetricError, __version__, load_artifact_file
 from clearmetric.emitters import emit_compile, emit_impact
 
@@ -20,7 +20,7 @@ from clearmetric.emitters import emit_compile, emit_impact
 def _build_root_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cm",
-        description="ClearMetric Core — warehouse-connected compiler and graph engine.",
+        description="ClearMetric Core — warehouse-aware lineage compiler and graph engine.",
     )
     parser.add_argument(
         "--version",
@@ -47,13 +47,8 @@ def _build_root_parser() -> argparse.ArgumentParser:
     warehouse.add_argument(
         "--information-schema",
         required=True,
-        help="Path to local INFORMATION_SCHEMA JSON fixture.",
+        help="Path to local INFORMATION_SCHEMA JSON metadata export.",
     )
-    snowflake = connect_sub.add_parser(
-        "snowflake",
-        help="Configure live Snowflake metadata connection.",
-    )
-    snowflake.add_argument("--profile", required=True, help="Snowflake profile name.")
 
     scan = subparsers.add_parser("scan", help="Discover configured project sources.")
     scan.add_argument(
@@ -68,7 +63,7 @@ def _build_root_parser() -> argparse.ArgumentParser:
     )
     compile_parser.add_argument(
         "--format",
-        choices=("json", "text", "openlineage"),
+        choices=("json", "text", "openlineage", "catalog"),
         default="json",
         help="Output format (default: json).",
     )
@@ -185,26 +180,31 @@ def _run_connect(args: argparse.Namespace) -> int:
         print(f"cm error: project config not found: {config_path}", file=sys.stderr)
         return 1
 
+    if args.connect_target != "warehouse":
+        print(
+            f"cm error: unknown connect target {args.connect_target!r}; "
+            "use: cm connect warehouse --information-schema PATH",
+            file=sys.stderr,
+        )
+        return 1
+
     raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
     sources = raw.setdefault("sources", {})
-    if args.connect_target == "warehouse":
-        resolved = (root / args.information_schema).resolve()
-        if not resolved.is_file():
-            print(
-                f"cm error: information schema file not found: {resolved}",
-                file=sys.stderr,
-            )
-            return 1
-        try:
-            path_value = f"./{resolved.relative_to(root).as_posix()}"
-        except ValueError:
-            path_value = str(resolved)
-        sources["warehouse"] = {
-            "kind": "information_schema",
-            "path": path_value,
-        }
-    else:
-        sources["warehouse"] = {"kind": "snowflake", "profile": args.profile}
+    resolved = (root / args.information_schema).resolve()
+    if not resolved.is_file():
+        print(
+            f"cm error: information schema file not found: {resolved}",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        path_value = f"./{resolved.relative_to(root).as_posix()}"
+    except ValueError:
+        path_value = str(resolved)
+    sources["warehouse"] = {
+        "kind": "information_schema",
+        "path": path_value,
+    }
 
     config_path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8")
     print(f"Updated warehouse source in {config_path}")
@@ -275,7 +275,7 @@ def _run_clean(args: argparse.Namespace) -> int:
 
 def _run_contract(args: argparse.Namespace) -> int:
     artifact = load_artifact_file(Path(args.artifact_path))
-    enforce_structural_checks(artifact)
+    enforce_graph(artifact, posture="strict")
     print(f"contract: valid ({args.artifact_path})")
     return 0
 

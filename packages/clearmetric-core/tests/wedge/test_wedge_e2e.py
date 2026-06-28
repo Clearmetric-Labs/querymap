@@ -116,6 +116,53 @@ def test_wedge_init_connect_scan_compile_impact_clean_contract(tmp_path: Path):
     contract_result = _run_cm(project_dir, "contract", str(graph_path))
     assert contract_result.returncode == 0, contract_result.stderr
 
+    catalog_result = _run_cm(project_dir, "compile", "--format", "catalog")
+    assert catalog_result.returncode == 0, catalog_result.stderr
+    catalog_payload = json.loads(catalog_result.stdout)
+    catalog_kinds = {node["kind"] for node in catalog_payload["nodes"]}
+    assert catalog_kinds.issubset({"table", "column", "model"})
+
+
+def test_wedge_aliases_bind_mismatched_names(tmp_path: Path):
+    project_dir = setup_wedge_project(tmp_path / "alias")
+    warehouse_schema = project_dir / "warehouse_schema.json"
+    warehouse_schema.write_text(
+        json.dumps(
+            {
+                "warehouse": "jaffle",
+                "tables": [
+                    {
+                        "schema": "analytics",
+                        "name": "orders",
+                        "columns": [{"name": "amount", "data_type": "number"}],
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    aliases_path = project_dir / "aliases.yaml"
+    aliases_path.write_text(
+        "version: 1\ntable_aliases:\n  orders: analytics.orders\n",
+        encoding="utf-8",
+    )
+    config_path = project_dir / "clearmetric.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["aliases"] = "./aliases.yaml"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    compile_result = _run_cm(project_dir, "compile", "--format", "json")
+    assert compile_result.returncode == 0, compile_result.stderr
+    artifact = CatalogArtifact.model_validate(json.loads(compile_result.stdout))
+    orders_table = next(
+        (node for node in artifact.nodes if node.id == "table:orders"),
+        None,
+    )
+    assert orders_table is not None
+    assert orders_table.bindings
+    assert orders_table.bindings[0].schema_name == "analytics"
+    assert orders_table.bindings[0].table == "orders"
+
 
 def test_contract_rejects_dangling_edge(tmp_path: Path):
     artifact = CatalogArtifact(

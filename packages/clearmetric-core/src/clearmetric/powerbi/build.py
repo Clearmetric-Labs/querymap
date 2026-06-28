@@ -9,7 +9,6 @@ from clearmetric.core import (
     CatalogArtifact,
     Edge,
     Evidence,
-    MatchStatus,
     Node,
     Warning,
     merge,
@@ -144,11 +143,14 @@ def _build_powerbi(
                         schema=schema,
                         table=sql_table,
                     )
-                    upstream_id, match_status = _match_upstream(
-                        candidates,
-                        warehouse_table_ids,
-                        alias_map,
-                    )
+                    if warehouse_table_ids:
+                        upstream_id, match_status = resolve_table_match(
+                            candidates,
+                            warehouse_table_ids,
+                            alias_map=alias_map,
+                        )
+                    else:
+                        upstream_id, match_status = None, "unresolved"
                     edges.append(
                         Edge(
                             kind="feeds",
@@ -176,11 +178,14 @@ def _build_powerbi(
                 schema=source.schema,
                 table=source.table,
             )
-            upstream_id, match_status = _match_upstream(
-                candidates,
-                warehouse_table_ids,
-                alias_map,
-            )
+            if warehouse_table_ids:
+                upstream_id, match_status = resolve_table_match(
+                    candidates,
+                    warehouse_table_ids,
+                    alias_map=alias_map,
+                )
+            else:
+                upstream_id, match_status = None, "unresolved"
             edges.append(
                 Edge(
                     kind="feeds",
@@ -310,21 +315,6 @@ def _build_powerbi(
         unresolved_join_count=unresolved,
     )
     return BuiltPowerBI(artifact=artifact, summary=summary)
-
-
-def _match_upstream(
-    candidates: list[str],
-    warehouse_table_ids: set[str] | None,
-    alias_map: AliasMap | None,
-) -> tuple[str | None, MatchStatus]:
-    if not warehouse_table_ids:
-        return None, "unresolved"
-    matched_id, status = resolve_table_match(
-        candidates,
-        warehouse_table_ids,
-        alias_map=alias_map,
-    )
-    return matched_id, status
 
 
 def _resolve_unresolved_feeds_edge(
