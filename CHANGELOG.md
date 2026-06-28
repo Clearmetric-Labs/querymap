@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.9.0 - 2026-06-28
+
+### Added (ClearMetric Core V1 compiler foundation)
+
+- **Schema packaging** — JSON schemas ship in `clearmetric.spec`; repo-root `spec/` removed
+- **Compile diagnostics** — stderr summary with `derives_from` counts and zero-lineage warning via `format_compile_diagnostics()`
+- **Self-contained examples** — `examples/lineage-demo` and `examples/catalog-demo` replace `wedge-jaffle`
+- **Intent gate** — `enabled_sources.intent` requires `CM_EXPERIMENTAL=1`
+- **Identity binding** — warehouse qualified names include database; partial dbt binding with ambiguity refusal
+- **Path security** — manifest-relative loaders reject traversal escapes
+- **Impact JSON** — `traversed_edges` populated on downstream/upstream traversal
+- **Lineage corpus** — 30+ verified ground-truth probes; `SELECT *` expansion when upstream columns are known
+- **Docs** — split `public-architecture`, `vision`, `limitations`, and `uncertainty`
+
+### Changed
+
+- **CI** — `examples-smoke`, `/tmp` `release-smoke`, import-linter contract, repo-root `spec/` guard
+- **`check.zero_column_lineage`** — cleaner surfaces zero `derives_from` graphs
+- **Consumer bundles** — rebuilt for lineage-demo and minimal fixtures
+
 ## 0.8.1 - 2026-06-28
 
 ### Added (Consumer MVP demo hardening)
