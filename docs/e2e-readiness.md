@@ -35,7 +35,7 @@ select → gate → apply_policy → emit
 
 ## Consumer MVP Bundle (0.8.x)
 
-Implemented under [`examples/consumers/`](../examples/consumers/README.md):
+Implemented under [`examples/consumers/`](https://github.com/ClearMetric-Labs/ClearMetric-Core/tree/main/examples/consumers):
 
 - Versioned **bundle contract** (`bundle.manifest.json` + JSON schemas)
 - Scenario registry + `scripts/consumers/build_bundle.py`
@@ -71,7 +71,7 @@ Lab consumer bundles (`consumer-catalog`, `frontend-contract`, `ai-context`) rem
 
 ## Deferred: resolver corpus
 
-Graph correctness on messy real SQL is a **parallel track**, not gated by this checkpoint. See [packages/clearmetric-core/docs/lineage/limitations.md](../packages/clearmetric-core/docs/lineage/limitations.md).
+Graph correctness on messy real SQL is a **parallel track**, not gated by this checkpoint. See [reference/lineage-limitations.md](reference/lineage-limitations.md).
 
 ## Stop condition
 

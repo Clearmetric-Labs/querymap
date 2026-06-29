@@ -36,6 +36,16 @@ source .venv/bin/activate
 python -m pip install -e "packages/clearmetric-core[dev,release]"
 ```
 
+## Preview docs locally
+
+```bash
+python -m pip install -e "packages/clearmetric-core[docs,runtime]"
+python scripts/generate_wiki.py
+mkdocs serve
+```
+
+Published site: [clearmetric-labs.github.io/ClearMetric-Core](https://clearmetric-labs.github.io/ClearMetric-Core/)
+
 ## Run The Checks
 
 Run the centralized repo quality checks before opening a pull request:
@@ -133,5 +143,5 @@ New modules must follow [docs/modules_instruction.md](docs/modules_instruction.m
 
 Keep pull requests small, direct, and honest about scope. If a change expands the
 public contract, update `README.md`,
-`packages/clearmetric-core/docs/contract.md`, and the relevant tests in the same
+`docs/reference/contract.md`, and the relevant tests in the same
 pull request.

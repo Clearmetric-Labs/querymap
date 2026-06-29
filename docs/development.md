@@ -82,6 +82,18 @@ cm clean
 cm contract graph.json
 ```
 
+## Dev wiki
+
+Regenerate the CLI reference when `clearmetric.cli` help text changes:
+
+```bash
+python -m pip install -e "packages/clearmetric-core[docs,runtime]"
+python scripts/generate_wiki.py
+mkdocs serve
+```
+
+CI checks `python scripts/generate_wiki.py --check` and `mkdocs build --strict`.
+
 ## Builds
 
 ```bash

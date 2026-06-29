@@ -32,7 +32,7 @@ resolution is incomplete.
 | `clearmetric.cleaner` | Structural and posture-aware findings |
 | `clearmetric.emitters` | Format registry and diagnostics |
 
-Full historical narrative lives in [`clearmetric-architecture.md`](../clearmetric-architecture.md).
+Full historical narrative lives in [`clearmetric-architecture.md`](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/clearmetric-architecture.md).
 Vision and long-term consumers: [`vision.md`](vision.md).
 
 ## Self-contained quickstart
@@ -47,4 +47,4 @@ cm impact orders_base.amount --downstream
 cm clean
 ```
 
-See [`examples/lineage-demo/README.md`](../examples/lineage-demo/README.md).
+See [`examples/lineage-demo/README.md`](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/examples/lineage-demo/README.md).

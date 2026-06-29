@@ -1,6 +1,6 @@
 # `clearmetric.lineage` Contract Validation
 
-**Source of truth:** [`packages/clearmetric-core/docs/contract.md`](../packages/clearmetric-core/docs/contract.md)
+**Source of truth:** [`reference/contract.md`](reference/contract.md)
 
 **Enterprise adapter:** reference only — integration lag must not drive OSS design.
 

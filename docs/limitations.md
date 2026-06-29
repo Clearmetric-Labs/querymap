@@ -21,4 +21,4 @@ ClearMetric Core v1 is a **local compiler**, not a live metadata platform.
 - Intent/metrics ingestion requires `CM_EXPERIMENTAL=1`.
 - Lab formats (`consumer-catalog`, `frontend-contract`, `ai-context`, `cm query`, `cm serve`) are experimental.
 
-Detailed SQL patterns: [`packages/clearmetric-core/docs/lineage/limitations.md`](../packages/clearmetric-core/docs/lineage/limitations.md).
+Detailed SQL patterns: [`reference/lineage-limitations.md`](reference/lineage-limitations.md).

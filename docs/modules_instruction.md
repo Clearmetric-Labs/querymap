@@ -42,7 +42,7 @@ ClearMetric Core must contain ONLY general-purpose, non-proprietary logic.
 - **Subpackage only:** add `clearmetric.<name>` under `packages/clearmetric-core/src/clearmetric/`.
   Do not add a new PyPI package or top-level `packages/<name>/` publish target.
 - Uses `clearmetric.core` **only** — never imports sibling modules at build time.
-- Own tests and honest limitations doc under `packages/clearmetric-core/docs/`.
+- Own tests and honest limitations doc under [`docs/reference/contract.md`](reference/contract.md) (module-specific) or adjacent package docs when not wiki-indexed.
 - **Recoverable-and-warning-rich**, not hard-fail: on messy real-world input, map what you can
   and emit explicit warnings; hard-fail only on genuinely unprocessable input.
 - Public artifact contract stays stable once shipped.

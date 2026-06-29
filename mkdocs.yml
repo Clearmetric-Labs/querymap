@@ -1,0 +1,45 @@
+site_name: ClearMetric Core Dev Wiki
+site_url: https://clearmetric-labs.github.io/ClearMetric-Core/
+repo_url: https://github.com/ClearMetric-Labs/ClearMetric-Core
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+strict: true
+
+validation:
+  nav:
+    # info: warn fails mkdocs --strict on orphan pages; info keeps CI green for doc churn
+    omitted_files: info
+  links:
+    unrecognized_links: warn
+    absolute_links: warn
+
+nav:
+  - Home: index.md
+  - Development: development.md
+  - Architecture: public-architecture.md
+  - Limits: limitations.md
+  - Contract: reference/contract.md
+  - Lineage Limits: reference/lineage-limitations.md
+  - CLI Reference: reference/cli.md
+  - Roadmaps:
+      - V1 Boundary: v1-boundary.md
+      - Adoption Gate: adoption-gate.md
+      - Future Roadmap: future-roadmap-gated.md
+      - Backbone V2 Roadmap: backbone-v2-roadmap.md
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - toc:
+      permalink: true

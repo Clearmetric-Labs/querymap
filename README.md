@@ -24,7 +24,7 @@ Warehouse metadata is a **local INFORMATION_SCHEMA JSON export** — not a live 
 
 If `cm` is occupied on your PATH: `python -m clearmetric.cli --project-dir . …`
 
-> **Status:** early development (0.x). Pin your versions. Architecture: [`docs/public-architecture.md`](docs/public-architecture.md) · limits: [`docs/limitations.md`](docs/limitations.md)
+> **Status:** early development (0.x). Pin your versions. **Dev wiki:** [clearmetric-labs.github.io/ClearMetric-Core](https://clearmetric-labs.github.io/ClearMetric-Core/) · Architecture: [`docs/public-architecture.md`](docs/public-architecture.md) · limits: [`docs/limitations.md`](docs/limitations.md)
 
 ## Features
 
@@ -36,7 +36,7 @@ If `cm` is occupied on your PATH: `python -m clearmetric.cli --project-dir . …
 
 ## Quickstart
 
-Start with the self-contained [`examples/lineage-demo`](examples/lineage-demo/) project (SQL folder + warehouse JSON).
+Start with the self-contained [`examples/lineage-demo`](examples/lineage-demo/) project (SQL pipeline + warehouse JSON).
 
 ```bash
 pip install clearmetric-core
@@ -100,7 +100,7 @@ Static analysis for SQL/dbt lineage; warehouse **metadata exports** only in the 
 ClearMetric does not connect to live warehouses or execute production queries. On star-heavy
 SQL (`SELECT *` without schema), ClearMetric flags what it cannot resolve. See
 [`docs/limitations.md`](docs/limitations.md) and
-[lineage limitations](packages/clearmetric-core/docs/lineage/limitations.md).
+[lineage limitations](docs/reference/lineage-limitations.md).
 
 ## Feedback
 
@@ -120,7 +120,7 @@ ClearMetric Core is one package at `packages/clearmetric-core`. See
 [`docs/public-architecture.md`](docs/public-architecture.md) for v1 scope and
 [`clearmetric-architecture.md`](clearmetric-architecture.md) for the full historical design.
 
-**Docs:** [public architecture](docs/public-architecture.md) · [vision](docs/vision.md) · [limitations](docs/limitations.md) · [contract](packages/clearmetric-core/docs/contract.md) · [contributing](CONTRIBUTING.md)
+**Docs:** [dev wiki](https://clearmetric-labs.github.io/ClearMetric-Core/) · [public architecture](docs/public-architecture.md) · [vision](docs/vision.md) · [limitations](docs/limitations.md) · [contract](docs/reference/contract.md) · [contributing](CONTRIBUTING.md)
 
 **Local development**
 

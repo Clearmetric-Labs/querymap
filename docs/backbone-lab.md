@@ -5,7 +5,7 @@
 This document describes **Backbone Lab** flows used to prove scaffold primitives
 (contracts, intent, policy gate, format registry, consumer projections, runtime harness)
 work on the same graph as the wedge. These flows are **not** part of the public product
-promise in [README.md](../README.md) or [v1-boundary.md](v1-boundary.md).
+promise in [README.md](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/README.md) or [v1-boundary.md](v1-boundary.md).
 
 ## Public vs lab split
 
@@ -40,7 +40,7 @@ them as experimental.
 
 ## Demo project
 
-See [examples/backbone-lab/README.md](../examples/backbone-lab/README.md). The example
+See [examples/backbone-lab/README.md](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/examples/backbone-lab/README.md). The example
 uses shared jaffle fixtures from `packages/clearmetric-core/tests/fixtures/`.
 
 ```bash

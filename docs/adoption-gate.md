@@ -12,7 +12,7 @@ The adoption gate blocks **public product claims and production positioning**. I
 
 Until external evidence exists, do **not**:
 
-- Expand [README.md](../README.md) shipped capabilities beyond the wedge promise
+- Expand [README.md](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/README.md) shipped capabilities beyond the wedge promise
 - Expand [v1-boundary.md](v1-boundary.md) in-scope tables with metrics/runtime/governance
 - Market production governance, cloud, live warehouse connectors, or native RLS deployment
 - Present lab primitives as shipped product (README / v1-boundary / marketing)

@@ -4,13 +4,13 @@
 > **Active scope:** Wedge v1 + Phase 0 consolidation (see CHANGELOG 0.5.1).  
 > **Gated work:** [`future-roadmap-gated.md`](future-roadmap-gated.md) — starts only after [`adoption-gate.md`](adoption-gate.md) passes.
 
-**Status:** Working roadmap only — not an active execution plan until Wedge v1 ships. Promote unchanged to [docs/backbone-v2-roadmap.md](docs/backbone-v2-roadmap.md) in the repo when Wedge v1 is green. Do not edit this roadmap again unless implementation exposes a real contradiction.
+**Status:** Working roadmap only — not an active execution plan until Wedge v1 ships. Promote unchanged to [backbone-v2-roadmap.md](backbone-v2-roadmap.md) in the repo when Wedge v1 is green. Do not edit this roadmap again unless implementation exposes a real contradiction.
 
 ---
 
 ## Strategy (read this first)
 
-The [architecture doc](clearmetric-architecture.md) describes the **full foundation**. The **build strategy** is unchanged:
+The [architecture doc](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/clearmetric-architecture.md) describes the **full foundation**. The **build strategy** is unchanged:
 
 1. **Ship the wedge first** — column-level lineage and impact, local, one command, zero authored intent.
 2. **Let the foundation accrete** — metrics, queries, policy-gated exports, runtime — when adoption pulls it.
@@ -38,7 +38,7 @@ Do not start Backbone until all are true (much may already be done per CHANGELOG
 5. Cleaner posture registry
 6. build_graph / check_graph / enforce_graph split
 7. CLI unification (project-first clearmetric.yaml)
-8. Catalog projection (compile --format catalog) + wedge-jaffle + docs/v1-boundary
+8. Catalog projection (compile --format catalog) + lineage-demo + docs/v1-boundary
 ```
 
 **Proof command (Wedge v1):**
@@ -145,7 +145,7 @@ Happy-path unit tests alone are insufficient for Phase 3 sign-off.
 
 `ground_truth.py` parity (Phase 0) proves **no regression** during GraphView refactor — not that lineage was correct on messy SQL.
 
-**Parallel track (always):** hand-authored honesty corpus, adversarial SQL fixtures, [`packages/clearmetric-core/docs/lineage/limitations.md`](packages/clearmetric-core/docs/lineage/limitations.md). Do not let backbone engineering substitute for corpus work.
+**Parallel track (always):** hand-authored honesty corpus, adversarial SQL fixtures, [`reference/lineage-limitations.md`](reference/lineage-limitations.md). Do not let backbone engineering substitute for corpus work.
 
 ---
 
@@ -172,7 +172,7 @@ clearmetric/graph/
 
 ### Delete
 
-- [lineage/graph.py](packages/clearmetric-core/src/clearmetric/lineage/graph.py) — entire file
+- [lineage/graph.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/lineage/graph.py) — entire file
 - `trace_upstream_from_project`, `trace_downstream_from_project` — functions + exports
 
 ### Keep
@@ -182,7 +182,7 @@ clearmetric/graph/
 
 ### Pipeline stub
 
-[compiler/pipeline.py](packages/clearmetric-core/src/clearmetric/compiler/pipeline.py) documents **current wedge stages only**:
+[compiler/pipeline.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/compiler/pipeline.py) documents **current wedge stages only**:
 
 ```python
 PIPELINE_STAGES = ("discover", "ingest", "merge", "bind")
@@ -203,7 +203,7 @@ Extend with `link`, `compile_contracts` when Phases 2 and 4a start — not befor
 
 **Gate:** Adoption gate passed.
 
-Add `metric` / `query` node kinds, [core/contracts.py](packages/clearmetric-core/src/clearmetric/core/contracts.py), ID helpers, [compiler/contracts.py](packages/clearmetric-core/src/clearmetric/compiler/contracts.py) validation.
+Add `metric` / `query` node kinds, [core/contracts.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/core/contracts.py), ID helpers, [compiler/contracts.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/compiler/contracts.py) validation.
 
 No adapter yet — hand-built fixtures in tests.
 
@@ -213,7 +213,7 @@ No adapter yet — hand-built fixtures in tests.
 
 **Gate:** Adoption gate + Phase 1.
 
-[adapters/intent.py](packages/clearmetric-core/src/clearmetric/adapters/intent.py), packaged [`intent.schema.json`](packages/clearmetric-core/src/clearmetric/spec/intent.schema.json), `compiler/link_metrics.py` (add at gate).
+[adapters/intent.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/adapters/intent.py), packaged [`intent.schema.json`](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/spec/intent.schema.json), `compiler/link_metrics.py` (add at gate).
 
 **Batch validation:** scan all YAML → collect errors → single `AdapterError` with full list.
 
@@ -223,7 +223,7 @@ No adapter yet — hand-built fixtures in tests.
 
 **Gate:** Adoption gate + Phase 1 (can overlap Phase 2 tail).
 
-- Rewrite [policy/evaluate.py](packages/clearmetric-core/src/clearmetric/policy/evaluate.py) → `evaluate_node`
+- Rewrite [policy/evaluate.py](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/src/clearmetric/policy/evaluate.py) → `evaluate_node`
 - Re-add `policy/gate.py` thin wrapper (removed from wedge tree)
 - **Delete** `project_graph` (ungated generic projection)
 - **Keep** unfiltered admin catalog: `compile --format catalog` — no identity, same wedge semantics

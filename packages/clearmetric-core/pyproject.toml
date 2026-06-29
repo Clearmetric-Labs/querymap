@@ -54,6 +54,9 @@ release = [
     "build>=1.2.2",
     "twine>=5.1.1",
 ]
+docs = [
+    "mkdocs-material>=9.5",
+]
 
 [project.scripts]
 cm = "clearmetric.cli:main"

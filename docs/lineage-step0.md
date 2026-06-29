@@ -2,7 +2,7 @@
 
 The step0 prototype has been superseded by the shipped validation suite and report.
 
-See [`packages/clearmetric-core/docs/lineage/validation-report.md`](../packages/clearmetric-core/docs/lineage/validation-report.md) for:
+See [`packages/clearmetric-core/docs/lineage/validation-report.md`](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/packages/clearmetric-core/docs/lineage/validation-report.md) for:
 
 - the raw `sqlglot` baseline comparison
 - the dbt manifest comparison

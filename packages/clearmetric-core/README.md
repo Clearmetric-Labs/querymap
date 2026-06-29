@@ -49,7 +49,7 @@ from clearmetric.core import attach_warehouse_bindings, merge, parse_column_sele
 
 ## Contract & example
 
-- [`docs/contract.md`](docs/contract.md)
+- [`../../docs/reference/contract.md`](../../docs/reference/contract.md)
 - [`src/clearmetric/spec/clearmetric-project.schema.json`](src/clearmetric/spec/clearmetric-project.schema.json)
 
 ```bash

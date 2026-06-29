@@ -423,4 +423,9 @@ def main(argv: list[str] | None = None) -> int:
     return 1
 
 
-__all__ = ["main"]
+def build_parser() -> argparse.ArgumentParser:
+    """Return the CLI argument parser (for docs generation and tests)."""
+    return _build_root_parser()
+
+
+__all__ = ["build_parser", "main"]

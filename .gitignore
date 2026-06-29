@@ -37,6 +37,7 @@ MANIFEST
 
 # Build and packaging
 build/
+site/
 dist/
 *.whl
 

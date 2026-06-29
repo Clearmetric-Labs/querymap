@@ -6,7 +6,7 @@ binds warehouse metadata, validation runs through the cleaner and security floor
 
 Composition with Power BI or query artifacts remains **optional** via `clearmetric.core.merge()`.
 
-Full contract: [`packages/clearmetric-core/docs/contract.md`](../packages/clearmetric-core/docs/contract.md)
+Full contract: [`reference/contract.md`](reference/contract.md)
 
 Backbone v2 modules (`clearmetric.graph`, policy-gated projections, intent adapter, runtime) are
 built for internal lab use behind `CM_EXPERIMENTAL=1` — see [backbone-lab.md](backbone-lab.md).

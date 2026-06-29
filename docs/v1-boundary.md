@@ -47,7 +47,7 @@ cm clean          # exit 1 on errors only; warnings never fail exit
 cm contract graph.json
 ```
 
-See [`examples/lineage-demo/README.md`](../examples/lineage-demo/README.md).
+See [`examples/lineage-demo/README.md`](https://github.com/ClearMetric-Labs/ClearMetric-Core/blob/main/examples/lineage-demo/README.md).
 
 Gated post-wedge work (metrics/queries, runtime, policy-gated exports) is documented in [`future-roadmap-gated.md`](future-roadmap-gated.md) and requires [`adoption-gate.md`](adoption-gate.md) evidence before shipping. Internal lab primitives are built and tested in [`backbone-lab.md`](backbone-lab.md) (`CM_EXPERIMENTAL=1` only). Backbone Phase 0 (GraphView consolidation) is complete in 0.5.1; see [`backbone-v2-roadmap.md`](backbone-v2-roadmap.md) for sequencing.
 
